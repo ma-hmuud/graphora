@@ -1,0 +1,32 @@
+{
+  "name": "graphora",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:web": "turbo -F web dev",
+    "dev:server": "turbo -F server dev",
+    "db:push": "turbo -F @graphora/db db:push",
+    "db:studio": "turbo -F @graphora/db db:studio",
+    "db:generate": "turbo -F @graphora/db db:generate",
+    "db:migrate": "turbo -F @graphora/db db:migrate"
+  },
+  "dependencies": {
+    "@graphora/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@graphora/config": "workspace:*",
+    "@types/bun": "catalog:",
+    "turbo": "^2.8.12",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@10.33.0"
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@graphora/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@graphora/db": "workspace:*",
+    "@graphora/env": "workspace:*",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@graphora/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

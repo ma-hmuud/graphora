@@ -1,0 +1,3 @@
+{
+  "extends": "@graphora/config/tsconfig.base.json"
+}
