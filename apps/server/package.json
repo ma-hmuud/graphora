@@ -10,13 +10,21 @@
     "start": "bun run dist/index.mjs"
   },
   "dependencies": {
-    "@fastify/cors": "^11.0.1",
     "@graphora/auth": "workspace:*",
     "@graphora/db": "workspace:*",
     "@graphora/env": "workspace:*",
+    "@nestjs/common": "^11.1.19",
+    "@nestjs/core": "^11.1.19",
+    "@nestjs/graphql": "^13.2.5",
+    "@nestjs/mercurius": "^13.2.5",
+    "@nestjs/platform-fastify": "^11.1.19",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "fastify": "^5.3.3",
+    "graphql": "^16.13.2",
+    "mercurius": "^16.9.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
     "zod": "catalog:"
   },
   "devDependencies": {

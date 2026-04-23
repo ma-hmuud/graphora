@@ -3,6 +3,8 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "dist",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "paths": {
       "@/*": ["./src/*"]
     },
