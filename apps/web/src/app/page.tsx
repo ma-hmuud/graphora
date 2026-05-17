@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HeroCanvas from "@/components/hero-canvas";
+import DynamicGraphPreview from "@/components/dynamic-graph-preview";
 
 export default function Home() {
   return (
@@ -51,21 +52,15 @@ export default function Home() {
                     </a>
 </div>
 </div>
-{/*  Conceptual UI Preview Mockup  */}
+{/*  Dynamic Graph Editor Preview  */}
 <div className="relative z-10 w-full max-w-5xl mx-auto mt-20 glass-panel rounded-xl overflow-hidden shadow-2xl border border-outline-variant">
 <div className="h-8 border-b border-outline-variant bg-surface-container-lowest/50 flex items-center px-4 gap-2">
 <div className="w-3 h-3 rounded-full bg-outline-variant/50"></div>
 <div className="w-3 h-3 rounded-full bg-outline-variant/50"></div>
 <div className="w-3 h-3 rounded-full bg-outline-variant/50"></div>
 </div>
-<div className="aspect-[16/9] w-full bg-[url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&amp;w=2070&amp;auto=format&amp;fit=crop')] bg-cover bg-center" data-alt="A sophisticated dark-mode dashboard interface displaying a complex force-directed graph visualization. The network nodes glow with a vibrant electric indigo against a deep navy background. Thin, precise lines connect the data points. A technical sidebar on the right shows detailed centrality metrics and properties in monospaced fonts. The aesthetic is highly technical, minimalist, and developer-centric, resembling a command center for data architects.">
-<div className="w-full h-full bg-surface-container-low/80 backdrop-blur-sm flex items-center justify-center p-8">
-{/*  Abstract representation of the graph visualization inside the mockup  */}
-<div className="w-full h-full border border-primary/20 rounded-lg relative overflow-hidden flex items-center justify-center bg-background/50">
-<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background"></div>
-<span className="material-symbols-outlined text-primary/40 text-[120px] animate-pulse">hub</span>
-</div>
-</div>
+<div className="aspect-[16/9] w-full bg-background/50">
+<DynamicGraphPreview />
 </div>
 </div>
 </section>
@@ -260,9 +255,6 @@ export default function Home() {
 </div>
 </footer>
 </main>
-{/*  Lightweight Interactive Graph Script  */}
-
-
     </div>
   );
 }
