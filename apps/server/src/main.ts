@@ -3,7 +3,6 @@ import {
   FastifyAdapter,
   type NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import { auth } from "@graphora/auth";
 import { env } from "@graphora/env/server";
 import { AppModule } from "./app.module.js";
 
