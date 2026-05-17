@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:22-alpine
 RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
@@ -8,14 +8,10 @@ COPY apps/server/ apps/server/
 
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter server build
-
-FROM node:22-alpine
-WORKDIR /app
-
-COPY --from=builder /app/apps/server/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+RUN pnpm prune --prod
 
 ENV NODE_ENV=production
+ENV PORT=3001
 EXPOSE 3001
 
-CMD ["node", "dist/index.mjs"]
+CMD ["node", "apps/server/dist/index.mjs"]

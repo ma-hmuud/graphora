@@ -25,6 +25,7 @@
   "devDependencies": {
     "@graphora/config": "workspace:*",
     "@types/bun": "catalog:",
+    "next": "^16.2.0",
     "turbo": "^2.8.12",
     "typescript": "catalog:"
   },
