@@ -1,33 +1,29 @@
 {
-  "name": "graphora",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "type": "module",
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "check-types": "turbo check-types",
-    "dev:web": "turbo -F web dev",
-    "dev:server": "turbo -F server dev",
-    "db:push": "turbo -F @graphora/db db:push",
-    "db:studio": "turbo -F @graphora/db db:studio",
-    "db:generate": "turbo -F @graphora/db db:generate",
-    "db:migrate": "turbo -F @graphora/db db:migrate"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "dependencies": {
-    "@graphora/env": "workspace:*",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@graphora/config": "workspace:*",
     "@types/bun": "catalog:",
     "next": "^16.2.0",
     "turbo": "^2.8.12",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@10.33.0"
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma"
+    ]
+  }
 }

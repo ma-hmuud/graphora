@@ -18,6 +18,7 @@ export async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ logger: true }),
+    { bodyParser: false }
   );
 
   app.enableCors(baseCorsConfig);

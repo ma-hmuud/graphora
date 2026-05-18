@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum DatasetStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum GraphStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum Layout {
+  FORCE
+  CIRCULAR
+  HIERARCHICAL
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(100)
+  email        String   @unique @db.VarChar(255)
+  emailVerified Boolean @default(false)
+  image        String?
+  passwordHash String?  @map("password_hash")
+  plan         Plan     @default(FREE)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  sessions Session[]
+  accounts Account[]
+  datasets Dataset[]
+  graphs   Graph[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                Int
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Dataset {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(100)
+  description  String?        @db.VarChar(500)
+  s3Key        String         @map("s3_key")
+  sizeBytes    Int?           @map("size_bytes")
+  rowCount     Int?           @map("row_count")
+  status       DatasetStatus  @default(PROCESSING)
+  errorMessage String?        @map("error_message")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  userId Int  @map("user_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  graphs Graph[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("datasets")
+}
+
+model Graph {
+  id               Int         @id @default(autoincrement())
+  name             String      @db.VarChar(100)
+  status           GraphStatus @default(PROCESSING)
+  isDirected       Boolean     @default(true) @map("is_directed")
+  isWeighted       Boolean     @default(false) @map("is_weighted")
+  nodeCount        Int?        @map("node_count")
+  edgeCount        Int?        @map("edge_count")
+  density          Float?
+  componentsCount  Int?        @map("components_count")
+  shareSlug        String?     @unique @map("share_slug")
+  layoutPreference Layout      @default(FORCE) @map("layout_preference")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  userId Int  @map("user_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  datasetId Int     @map("dataset_id")
+  dataset   Dataset @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+
+  nodeMetrics NodeMetric[]
+
+  @@index([userId])
+  @@index([datasetId])
+  @@index([status])
+  @@map("graphs")
+}
+
+model NodeMetric {
+  id          Int    @id @default(autoincrement())
+  nodeId      String @map("node_id") @db.VarChar(255)
+  degree      Float
+  betweenness Float
+  closeness   Float
+  pagerank    Float
+
+  graphId Int   @map("graph_id")
+  graph   Graph @relation(fields: [graphId], references: [id], onDelete: Cascade)
+
+  @@unique([graphId, nodeId])
+  @@index([graphId])
+  @@index([nodeId])
+  @@map("node_metrics")
+}

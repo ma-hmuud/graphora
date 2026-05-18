@@ -10,21 +10,20 @@
     }
   },
   "scripts": {
-    "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio",
-    "db:migrate": "drizzle-kit migrate"
+    "db:generate": "prisma generate --schema=../../apps/server/src/prisma/schema.prisma",
+    "db:push": "prisma db push --schema=../../apps/server/src/prisma/schema.prisma",
+    "db:migrate": "prisma migrate dev --schema=../../apps/server/src/prisma/schema.prisma",
+    "db:studio": "prisma studio --schema=../../apps/server/src/prisma/schema.prisma"
   },
   "dependencies": {
     "@graphora/env": "workspace:*",
-    "@neondatabase/serverless": "^1.0.2",
+    "@prisma/client": "^6.6.0",
     "dotenv": "catalog:",
-    "drizzle-orm": "^0.45.1",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@graphora/config": "workspace:*",
-    "drizzle-kit": "^0.31.8",
+    "prisma": "^6.6.0",
     "typescript": "catalog:"
   }
 }

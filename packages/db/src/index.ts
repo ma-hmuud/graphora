@@ -1,12 +1,18 @@
+import { PrismaClient } from "@prisma/client";
 import { env } from "@graphora/env/server";
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
 
-import * as schema from "./schema";
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
-export function createDb() {
-  const sql = neon(env.DATABASE_URL);
-  return drizzle(sql, { schema });
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    datasourceUrl: env.DATABASE_URL,
+    log:
+      process.env.NODE_ENV === "development"
+        ? ["query", "error", "warn"]
+        : ["error"],
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
 }
-
-export const db = createDb();

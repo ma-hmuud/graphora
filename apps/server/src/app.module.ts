@@ -4,6 +4,8 @@ import { MercuriusDriver } from "@nestjs/mercurius";
 import type { MercuriusDriverConfig } from "@nestjs/mercurius";
 import { AppResolver } from "./app.resolver.js";
 import { join } from "node:path";
+import { AuthModule } from "@thallesp/nestjs-better-auth";
+import { auth } from "@graphora/auth";
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import { join } from "node:path";
         outputAs: "class",
       },
     }),
+    AuthModule.forRoot({ auth, disableTrustedOriginsCors: true })
   ],
   providers: [AppResolver],
 })

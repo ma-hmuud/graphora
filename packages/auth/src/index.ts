@@ -1,40 +1,34 @@
-import { createDb } from "@graphora/db";
-import * as schema from "@graphora/db/schema/auth";
+import { prisma } from "@graphora/db";
 import { env } from "@graphora/env/server";
 import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 
-export function createAuth() {
-  const db = createDb();
-
-  return betterAuth({
-    database: drizzleAdapter(db, {
-      provider: "pg",
-
-      schema: schema,
-    }),
-    trustedOrigins: [env.CORS_ORIGIN],
-    emailAndPassword: {
-      enabled: true,
+export const auth = betterAuth({
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+  }),
+  advanced: {
+    database: {
+      generateId: "serial",
     },
-    socialProviders: {
-      google: {
-        clientId: env.GOOGLE_CLIENT_ID,
-        clientSecret: env.GOOGLE_CLIENT_SECRET,
-        redirectURI: env.GOOGLE_REDIRECT_URI,
-      }
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+      httpOnly: true,
     },
-    secret: env.BETTER_AUTH_SECRET,
-    baseURL: env.BETTER_AUTH_URL,
-    advanced: {
-      defaultCookieAttributes: {
-        sameSite: "none",
-        secure: true,
-        httpOnly: true,
-      },
+  },
+  trustedOrigins: [env.CORS_ORIGIN],
+  emailAndPassword: {
+    enabled: true,
+  },
+  socialProviders: {
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      redirectURI: env.GOOGLE_REDIRECT_URI,
     },
-    plugins: [],
-  });
-}
-
-export const auth = createAuth();
+  },
+  secret: env.BETTER_AUTH_SECRET,
+  baseURL: env.BETTER_AUTH_URL,
+  plugins: [],
+});

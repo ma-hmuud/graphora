@@ -10,6 +10,7 @@
     "start": "bun run dist/index.mjs"
   },
   "dependencies": {
+    "@better-auth/prisma-adapter": "~1.5.5",
     "@graphora/auth": "workspace:*",
     "@graphora/db": "workspace:*",
     "@graphora/env": "workspace:*",
@@ -18,10 +19,12 @@
     "@nestjs/graphql": "^13.2.5",
     "@nestjs/mercurius": "^13.2.5",
     "@nestjs/platform-fastify": "^11.1.19",
+    "@prisma/client": "^6.6.0",
+    "@thallesp/nestjs-better-auth": "^2.6.0",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "fastify": "^5.3.3",
-    "graphql": "^16.13.2",
+    "graphql": "^16.9.0",
     "mercurius": "^16.9.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
@@ -30,6 +33,7 @@
   "devDependencies": {
     "@graphora/config": "workspace:*",
     "@types/bun": "catalog:",
+    "prisma": "^6.6.0",
     "tsdown": "^0.16.5",
     "typescript": "catalog:"
   }
