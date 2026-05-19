@@ -6,6 +6,7 @@ import { AppResolver } from "./app.resolver.js";
 import { join } from "node:path";
 import { AuthModule } from "@thallesp/nestjs-better-auth";
 import { auth } from "@graphora/auth";
+import { AuthResolver } from "./auth/auth.resolver.js";
 
 @Module({
   imports: [
@@ -18,8 +19,8 @@ import { auth } from "@graphora/auth";
         outputAs: "class",
       },
     }),
-    AuthModule.forRoot({ auth, disableTrustedOriginsCors: true })
+    AuthModule.forRoot({ auth, disableTrustedOriginsCors: true }),
   ],
-  providers: [AppResolver],
+  providers: [AppResolver, AuthResolver],
 })
 export class AppModule {}

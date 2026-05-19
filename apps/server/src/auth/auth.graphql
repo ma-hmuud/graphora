@@ -1,0 +1,16 @@
+type User {
+  id: Int!
+  name: String!
+  email: String!
+  emailVerified: Boolean!
+  image: String
+  passwordHash: String
+  plan: Plan!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum Plan {
+  FREE
+  PRO
+}

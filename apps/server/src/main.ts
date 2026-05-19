@@ -7,7 +7,7 @@ import { env } from "@graphora/env/server";
 import { AppModule } from "./app.module.js";
 
 const baseCorsConfig = {
-  origin: env.CORS_ORIGIN,
+  origin: env.CORS_ORIGIN.split(",").map((origin) => origin.trim()),
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
@@ -18,7 +18,7 @@ export async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ logger: true }),
-    { bodyParser: false }
+    { bodyParser: false },
   );
 
   app.enableCors(baseCorsConfig);
