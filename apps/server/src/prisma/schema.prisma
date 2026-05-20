@@ -50,7 +50,7 @@ model User {
 }
 
 model Session {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   userId    Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
@@ -64,7 +64,7 @@ model Session {
 }
 
 model Account {
-  id                    String    @id @default(cuid())
+  id                    Int       @id @default(autoincrement())
   userId                Int
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accountId             String
@@ -79,11 +79,12 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  @@unique([providerId, accountId])
   @@index([userId])
 }
 
 model Verification {
-  id         String   @id @default(cuid())
+  id         Int      @id @default(autoincrement())
   identifier String
   value      String
   expiresAt  DateTime
