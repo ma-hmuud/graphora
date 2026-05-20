@@ -3,16 +3,7 @@ import {
   FastifyAdapter,
   type NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import { env } from "@graphora/env/server";
 import { AppModule } from "./app.module.js";
-
-const baseCorsConfig = {
-  origin: env.CORS_ORIGIN.split(",").map((origin) => origin.trim()),
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  credentials: true,
-  maxAge: 86400,
-};
 
 export async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -21,9 +12,7 @@ export async function bootstrap(): Promise<void> {
     { bodyParser: false },
   );
 
-  app.enableCors(baseCorsConfig);
-
   const port = Number(process.env.PORT) || 3001;
-  await app.listen(port, "0.0.0.0");
+  await app.listen(port);
   console.log(`Server running on port ${port}`);
 }

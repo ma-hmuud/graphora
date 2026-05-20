@@ -16,10 +16,9 @@ import { AuthResolver } from "./auth/auth.resolver.js";
       typePaths: ["./**/*.graphql"],
       definitions: {
         path: join(process.cwd(), "src/graphql.ts"),
-        outputAs: "class",
       },
     }),
-    AuthModule.forRoot({ auth, disableTrustedOriginsCors: true }),
+    AuthModule.forRoot({ auth }),
   ],
   providers: [AppResolver, AuthResolver],
 })

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "~1.5.5",
+    "@fastify/cors": "^11.2.0",
     "@graphora/auth": "workspace:*",
     "@graphora/db": "workspace:*",
     "@graphora/env": "workspace:*",
