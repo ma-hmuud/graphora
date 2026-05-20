@@ -12,6 +12,7 @@
     "@graphora/env": "workspace:*",
     "@graphora/ui": "workspace:*",
     "@tanstack/react-form": "^1.28.0",
+    "@tanstack/react-query": "^5.59.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "catalog:",
     "dotenv": "catalog:",

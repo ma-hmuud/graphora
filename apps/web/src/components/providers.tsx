@@ -1,14 +1,26 @@
 "use client";
 
 import { Toaster } from "@graphora/ui/components/sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { ThemeProvider } from "./theme-provider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false} disableTransitionOnChange>
-      {children}
-      <Toaster richColors />
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="dark"
+      forcedTheme="dark"
+      enableSystem={false}
+      disableTransitionOnChange
+    >
+      <QueryClientProvider client={queryClient}>
+        {children}
+        <Toaster richColors />
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }
