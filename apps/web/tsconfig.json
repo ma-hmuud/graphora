@@ -30,7 +30,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "../../packages/auth/src/lib/mailjet-client.ts"
+    "../../packages/auth/src/lib/mail-sender.ts"
   ],
   "exclude": ["./node_modules"]
 }

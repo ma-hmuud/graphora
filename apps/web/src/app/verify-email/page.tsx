@@ -19,11 +19,42 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function VerifyEmailPage() {
   const { data: session, isPending } = authClient.useSession();
   const [isResending, setIsResending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  // Initialize countdown from localStorage on mount
+  useEffect(() => {
+    const storedTimestamp = localStorage.getItem("resend_cooldown_end");
+    if (storedTimestamp) {
+      const endTime = parseInt(storedTimestamp, 10);
+      const now = Date.now();
+
+      if (endTime > now) {
+        // Calculate remaining seconds
+        setCountdown(Math.ceil((endTime - now) / 1000));
+      } else {
+        // Clear expired timer
+        localStorage.removeItem("resend_cooldown_end");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (countdown <= 0) {
+      localStorage.removeItem("resend_cooldown_end");
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   if (isPending) {
     return (
@@ -47,7 +78,7 @@ export default function VerifyEmailPage() {
   }
 
   const handleResend = async () => {
-    if (!session?.user.email) return;
+    if (!session?.user.email || countdown > 0) return;
 
     setIsResending(true);
     try {
@@ -61,6 +92,12 @@ export default function VerifyEmailPage() {
       }
 
       toast.success("Verification email sent!");
+
+      // Set 2 minutes cooldown and store the target end time in localStorage
+      const durationSeconds = 120;
+      const endTime = Date.now() + durationSeconds * 1000;
+      localStorage.setItem("resend_cooldown_end", endTime.toString());
+      setCountdown(durationSeconds);
     } catch (error) {
       toast.error(
         "Failed to resend verification email. Please try again later.",
@@ -133,13 +170,15 @@ export default function VerifyEmailPage() {
               size="lg"
               className="h-12 w-full text-base font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
               onClick={handleResend}
-              disabled={isResending}
+              disabled={isResending || countdown > 0}
             >
               {isResending ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Sending link...
                 </>
+              ) : countdown > 0 ? (
+                `Resend available in ${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, "0")}`
               ) : (
                 "Resend verification email"
               )}

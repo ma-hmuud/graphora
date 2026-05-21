@@ -2,7 +2,7 @@ import { prisma } from "@graphora/db";
 import { env } from "@graphora/env/server";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { sendEmail } from "./lib/mailjet-client";
+import { sendEmail } from "./lib/mail-sender";
 
 const cors = env.CORS_ORIGIN.split(",").map((origin) => origin.trim());
 
