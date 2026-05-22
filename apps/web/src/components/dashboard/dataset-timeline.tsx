@@ -40,11 +40,11 @@ const mockVersions: Version[] = [
 
 export function DatasetTimeline() {
   return (
-    <div className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6 flex flex-col h-[500px]">
+    <div className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6 flex flex-col h-125">
       <h3 className="font-headline-md text-headline-md text-on-surface mb-6">
         Dataset Versions
       </h3>
-      <div className="flex-grow overflow-y-auto relative pr-2 custom-scrollbar">
+      <div className="grow overflow-y-auto relative pr-2 custom-scrollbar">
         {/* Timeline line */}
         <div className="absolute left-3 top-2 bottom-2 w-px bg-outline-variant/50" />
         
@@ -54,7 +54,7 @@ export function DatasetTimeline() {
               {/* Node */}
               <div
                 className={cn(
-                  "w-6 h-6 rounded-full bg-[#1E293B] border z-10 flex-shrink-0 flex items-center justify-center",
+                  "w-6 h-6 rounded-full bg-[#1E293B] border z-10 shrink-0 flex items-center justify-center",
                   version.isLatest 
                     ? "border-2 border-primary shadow-[0_0_8px_rgba(192,193,255,0.4)]" 
                     : "border-outline-variant"

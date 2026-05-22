@@ -2,12 +2,12 @@
 
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@graphora/ui/lib/utils";
-import { 
-  LayoutDashboard, 
-  Database, 
-  Network, 
-  HelpCircle, 
-  LogOut 
+import {
+  LayoutDashboard,
+  Database,
+  Network,
+  HelpCircle,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -40,7 +40,7 @@ export function Sidebar() {
   const user = session?.user;
 
   return (
-    <nav className="bg-surface-container-low text-primary-fixed-dim font-label-mono text-label-mono fixed left-0 top-0 h-full w-[280px] z-40 flex flex-col py-6 border-r border-outline-variant">
+    <nav className="bg-surface-container-low text-primary-fixed-dim font-label-mono text-label-mono fixed left-0 top-0 h-full w-panel-width z-40 flex flex-col py-6 border-r border-outline-variant">
       {/* Header */}
       <div className="px-6 mb-8 flex items-center gap-4">
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/30">
@@ -67,7 +67,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation Links */}
-      <div className="flex flex-col flex-grow">
+      <div className="flex flex-col grow">
         {navLinks.map((link) => {
           const isActive = pathname === link.href;
           const Icon = link.icon;
@@ -77,9 +77,9 @@ export function Sidebar() {
               href={link.href}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 transition-all active:translate-x-1 duration-200",
-                isActive 
-                  ? "bg-primary/10 text-primary border-r-2 border-primary shadow-[0_0_12px_rgba(192,193,255,0.3)]" 
-                  : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                isActive
+                  ? "bg-primary/10 text-primary border-r-2 border-primary shadow-[0_0_12px_rgba(192,193,255,0.3)]"
+                  : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary",
               )}
             >
               <Icon className="w-5 h-5" />

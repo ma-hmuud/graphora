@@ -49,7 +49,7 @@ const mockGraphs: Graph[] = [
 
 export function RecentGraphs() {
   return (
-    <div className="lg:col-span-2 bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6 flex flex-col h-[500px]">
+    <div className="lg:col-span-2 bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6 flex flex-col h-125">
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-headline-md text-headline-md text-on-surface">
           Recent Graphs
@@ -58,24 +58,30 @@ export function RecentGraphs() {
           View All
         </button>
       </div>
-      <div className="flex-grow overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+      <div className="grow overflow-y-auto pr-2 space-y-3 custom-scrollbar">
         {mockGraphs.map((graph) => (
           <div
             key={graph.id}
             className={cn(
               "bg-surface-container p-4 border transition-colors rounded-DEFAULT flex justify-between items-center group cursor-pointer",
-              graph.status === "READY" && "border-outline-variant hover:border-primary/40",
-              graph.status === "PROCESSING" && "border-primary/50 shadow-[0_0_8px_rgba(192,193,255,0.15)]",
-              graph.status === "FAILED" && "border-outline-variant hover:border-error/40"
+              graph.status === "READY" &&
+                "border-outline-variant hover:border-primary/40",
+              graph.status === "PROCESSING" &&
+                "border-primary/50 shadow-[0_0_8px_rgba(192,193,255,0.15)]",
+              graph.status === "FAILED" &&
+                "border-outline-variant hover:border-error/40",
             )}
           >
             <div className="flex items-center gap-4">
               <div
                 className={cn(
                   "w-10 h-10 rounded border flex items-center justify-center relative",
-                  graph.status === "READY" && "bg-primary/10 border-primary/30 text-primary",
-                  graph.status === "PROCESSING" && "bg-primary/10 border-primary/30 text-primary",
-                  graph.status === "FAILED" && "bg-error/10 border-error/30 text-error"
+                  graph.status === "READY" &&
+                    "bg-primary/10 border-primary/30 text-primary",
+                  graph.status === "PROCESSING" &&
+                    "bg-primary/10 border-primary/30 text-primary",
+                  graph.status === "FAILED" &&
+                    "bg-error/10 border-error/30 text-error",
                 )}
               >
                 {graph.status === "PROCESSING" ? (
@@ -94,7 +100,7 @@ export function RecentGraphs() {
                 <h4
                   className={cn(
                     "font-headline-sm text-headline-sm text-on-surface transition-colors",
-                    graph.status === "READY" && "group-hover:text-primary"
+                    graph.status === "READY" && "group-hover:text-primary",
                   )}
                 >
                   {graph.name}
@@ -102,10 +108,12 @@ export function RecentGraphs() {
                 <p
                   className={cn(
                     "font-label-mono text-label-mono",
-                    graph.status === "FAILED" ? "text-error/80" : "text-on-surface-variant"
+                    graph.status === "FAILED"
+                      ? "text-error/80"
+                      : "text-on-surface-variant",
                   )}
                 >
-                  {graph.status === "READY" 
+                  {graph.status === "READY"
                     ? `${graph.nodes} Nodes • ${graph.edges} Edges`
                     : graph.statusMessage}
                 </p>

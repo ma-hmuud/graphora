@@ -66,7 +66,7 @@ export default function Home() {
       <main>
         {/*  Hero Section  */}
         <section
-          className="relative min-h-[921px] flex flex-col justify-center items-center pt-24 pb-16 px-margin-desktop overflow-hidden border-b border-outline-variant"
+          className="relative min-h-230.25 flex flex-col justify-center items-center pt-24 pb-16 px-margin-desktop overflow-hidden border-b border-outline-variant"
           id="hero-section"
         >
           {/*  Canvas Placeholder for Force Graph  */}
@@ -222,7 +222,7 @@ export default function Home() {
               </h2>
             </div>
             <div className="flex flex-col md:flex-row gap-8 items-start relative">
-              <div className="hidden md:block absolute top-6 left-[10%] right-[10%] h-[2px] bg-outline-variant z-0"></div>
+              <div className="hidden md:block absolute top-6 left-[10%] right-[10%] h-0.5 bg-outline-variant z-0"></div>
               <div className="flex-1 relative z-10 flex flex-col items-center text-center">
                 <div className="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-lg mb-4 shadow-[0_0_15px_rgba(192,193,255,0.4)]">
                   1

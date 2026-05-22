@@ -24,8 +24,8 @@ export default function LoginPage() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#13131b] text-foreground">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(19, 19, 27,0.25),transparent_62%)] blur-3xl" />
-        <div className="absolute -bottom-48 right-10 h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle_at_center,rgba(19, 19, 27,0.18),transparent_60%)] blur-3xl" />
+        <div className="absolute -top-40 left-1/2 h-130 w-130 -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(19, 19, 27,0.25),transparent_62%)] blur-3xl" />
+        <div className="absolute -bottom-48 right-10 h-120 w-120 rounded-full bg-[radial-gradient(circle_at_center,rgba(19, 19, 27,0.18),transparent_60%)] blur-3xl" />
         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.03)_0%,rgba(255,255,255,0)_40%,rgba(255,255,255,0.04)_70%,rgba(255,255,255,0)_100%)]" />
       </div>
 
