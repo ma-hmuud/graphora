@@ -7,6 +7,10 @@ import { join } from "node:path";
 import { AuthModule } from "@thallesp/nestjs-better-auth";
 import { auth } from "@graphora/auth";
 import { AuthResolver } from "./auth/auth.resolver.js";
+import { S3Module } from "./s3/s3.module.js";
+import { DatasetsResolver } from "./datasets/datasets.resolver.js";
+import { DatasetsService } from "./datasets/datasets.service.js";
+import { GraphQLUpload } from "graphql-upload-minimal";
 
 @Module({
   imports: [
@@ -17,9 +21,11 @@ import { AuthResolver } from "./auth/auth.resolver.js";
       definitions: {
         path: join(process.cwd(), "src/graphql.ts"),
       },
+      resolvers: { Upload: GraphQLUpload },
     }),
     AuthModule.forRoot({ auth }),
+    S3Module,
   ],
-  providers: [AppResolver, AuthResolver],
+  providers: [AppResolver, AuthResolver, DatasetsResolver, DatasetsService],
 })
 export class AppModule {}

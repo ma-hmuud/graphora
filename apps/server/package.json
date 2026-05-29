@@ -10,8 +10,11 @@
     "start": "bun run dist/index.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1056.0",
+    "@aws-sdk/s3-request-presigner": "^3.1056.0",
     "@better-auth/prisma-adapter": "~1.5.5",
     "@fastify/cors": "^11.2.0",
+    "@fastify/multipart": "^9.4.0",
     "@graphora/auth": "workspace:*",
     "@graphora/db": "workspace:*",
     "@graphora/env": "workspace:*",
@@ -26,6 +29,7 @@
     "dotenv": "catalog:",
     "fastify": "^5.3.3",
     "graphql": "^16.9.0",
+    "graphql-upload-minimal": "^1.6.0",
     "mercurius": "^16.9.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
@@ -34,6 +38,7 @@
   "devDependencies": {
     "@graphora/config": "workspace:*",
     "@types/bun": "catalog:",
+    "@types/node": "^20.19.39",
     "prisma": "^6.6.0",
     "tsdown": "^0.16.5",
     "typescript": "catalog:"
