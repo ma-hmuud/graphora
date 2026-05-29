@@ -1,0 +1,41 @@
+scalar Upload
+
+enum DatasetStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+type Dataset {
+  id: Int!
+  name: String!
+  description: String
+  s3Key: String!
+  sizeBytes: Int
+  rowCount: Int
+  status: DatasetStatus!
+  errorMessage: String
+  createdAt: String!
+  updatedAt: String!
+  fileUrl: String
+}
+
+input CreateDatasetInput {
+  name: String!
+  description: String
+}
+
+input UpdateDatasetInput {
+  name: String
+  description: String
+}
+
+extend type Query {
+  datasets: [Dataset!]!
+}
+
+type Mutation {
+  createDataset(input: CreateDatasetInput!, file: Upload!): Dataset!
+  updateDataset(id: Int!, input: UpdateDatasetInput!): Dataset!
+  deleteDataset(id: Int!): Boolean!
+}
