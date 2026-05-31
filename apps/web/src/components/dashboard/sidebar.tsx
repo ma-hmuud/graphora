@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@graphora/ui/lib/utils";
 import {
@@ -8,9 +9,14 @@ import {
   Network,
   HelpCircle,
   LogOut,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+
+const SIDEBAR_EXPANDED = "16rem";
+const SIDEBAR_COLLAPSED = "4.5rem";
 
 const navLinks = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -18,14 +24,11 @@ const navLinks = [
   { name: "Graphs", href: "/dashboard/graphs", icon: Network },
 ];
 
-const footerLinks = [
-  { name: "Help", href: "/dashboard/help", icon: HelpCircle },
-];
-
 export function Sidebar() {
   const { data: session } = authClient.useSession();
   const pathname = usePathname();
   const router = useRouter();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -39,10 +42,25 @@ export function Sidebar() {
 
   const user = session?.user;
 
+  useEffect(() => {
+    const width = isCollapsed ? SIDEBAR_COLLAPSED : SIDEBAR_EXPANDED;
+    document.documentElement.style.setProperty("--sidebar-width", width);
+  }, [isCollapsed]);
+
   return (
-    <nav className="bg-surface-container-low text-primary-fixed-dim font-label-mono text-label-mono fixed left-0 top-0 h-full w-panel-width z-40 flex flex-col py-6 border-r border-outline-variant">
+    <nav
+      className={cn(
+        "bg-surface-container-low text-primary-fixed-dim font-label-mono text-label-mono fixed left-0 top-0 h-full z-40 flex flex-col py-6 border-r border-outline-variant transition-[width] duration-300",
+        isCollapsed ? "w-18" : "w-panel-width",
+      )}
+    >
       {/* Header */}
-      <div className="px-6 mb-8 flex items-center gap-4">
+      <div
+        className={cn(
+          "px-6 mb-8 flex items-center gap-4",
+          isCollapsed && "px-4",
+        )}
+      >
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/30">
           {user?.image ? (
             <img
@@ -56,7 +74,12 @@ export function Sidebar() {
             </div>
           )}
         </div>
-        <div>
+        <div
+          className={cn(
+            "transition-all",
+            isCollapsed && "opacity-0 w-0 overflow-hidden",
+          )}
+        >
           <h1 className="font-headline-sm text-headline-sm font-bold text-primary">
             Graphora
           </h1>
@@ -64,6 +87,20 @@ export function Sidebar() {
             {user?.name || "System Architect"}
           </p>
         </div>
+        <button
+          onClick={() => setIsCollapsed((value) => !value)}
+          className={cn(
+            "ml-auto text-on-surface-variant hover:text-primary transition-colors",
+            isCollapsed && "ml-0",
+          )}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="w-4 h-4" />
+          ) : (
+            <ChevronLeft className="w-4 h-4" />
+          )}
+        </button>
       </div>
 
       {/* Navigation Links */}
@@ -83,7 +120,14 @@ export function Sidebar() {
               )}
             >
               <Icon className="w-5 h-5" />
-              {link.name}
+              <span
+                className={cn(
+                  "transition-all",
+                  isCollapsed && "opacity-0 w-0 overflow-hidden",
+                )}
+              >
+                {link.name}
+              </span>
             </Link>
           );
         })}
@@ -91,22 +135,19 @@ export function Sidebar() {
 
       {/* Footer Links */}
       <div className="flex flex-col mt-auto pt-6 border-t border-outline-variant/30">
-        {footerLinks.map((link) => (
-          <Link
-            key={link.name}
-            href={link.href}
-            className="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high transition-all hover:text-primary active:translate-x-1 duration-200"
-          >
-            <link.icon className="w-5 h-5" />
-            {link.name}
-          </Link>
-        ))}
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high transition-all hover:text-error active:translate-x-1 duration-200 text-left w-full"
         >
           <LogOut className="w-5 h-5" />
-          Logout
+          <span
+            className={cn(
+              "transition-all",
+              isCollapsed && "opacity-0 w-0 overflow-hidden",
+            )}
+          >
+            Logout
+          </span>
         </button>
       </div>
     </nav>

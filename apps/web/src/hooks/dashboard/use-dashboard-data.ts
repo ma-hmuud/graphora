@@ -1,44 +1,61 @@
 "use client";
 
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { apolloClient } from "@/lib/apollo-client";
+import { DATASETS_QUERY, GRAPHS_QUERY } from "@/lib/graphql/queries";
 
 // This will eventually fetch from GraphQL
 export function useDashboardData() {
-  const statsQuery = useQuery({
-    queryKey: ["dashboard", "stats"],
+  const datasetsQuery = useQuery({
+    queryKey: ["datasets"],
     queryFn: async () => {
-      // Mock delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return {
-        totalDatasets: "1,248",
-        totalGraphs: "342",
-        nodesAnalyzed: "8.4M",
-        edgesAnalyzed: "14.2M",
-      };
+      const { data } = await apolloClient.query({
+        query: DATASETS_QUERY,
+        fetchPolicy: "network-only",
+      });
+      return data.datasets ?? [];
     },
   });
 
   const graphsQuery = useQuery({
-    queryKey: ["dashboard", "recent-graphs"],
+    queryKey: ["graphs"],
     queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 600));
-      return []; // Return empty or mock list
+      const { data } = await apolloClient.query({
+        query: GRAPHS_QUERY,
+        fetchPolicy: "network-only",
+      });
+      return data.graphs ?? [];
     },
   });
 
-  const timelineQuery = useQuery({
-    queryKey: ["dashboard", "timeline"],
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 700));
-      return [];
-    },
-  });
+  const stats = useMemo(() => {
+    const datasets = datasetsQuery.data ?? [];
+    const graphs = graphsQuery.data ?? [];
+    const nodesAnalyzed = graphs.reduce(
+      (total: number, graph: { nodeCount?: number | null }) =>
+        total + (graph.nodeCount ?? 0),
+      0,
+    );
+    const edgesAnalyzed = graphs.reduce(
+      (total: number, graph: { edgeCount?: number | null }) =>
+        total + (graph.edgeCount ?? 0),
+      0,
+    );
+
+    return {
+      totalDatasets: datasets.length,
+      totalGraphs: graphs.length,
+      nodesAnalyzed,
+      edgesAnalyzed,
+    };
+  }, [datasetsQuery.data, graphsQuery.data]);
 
   return {
-    stats: statsQuery.data,
+    stats,
     graphs: graphsQuery.data,
-    timeline: timelineQuery.data,
+    datasets: datasetsQuery.data,
     isLoading:
-      statsQuery.isLoading || graphsQuery.isLoading || timelineQuery.isLoading,
+      graphsQuery.isLoading || datasetsQuery.isLoading,
   };
 }

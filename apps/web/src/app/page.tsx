@@ -1,8 +1,16 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import HeroCanvas from "@/components/hero-canvas";
 import DynamicGraphPreview from "@/components/dynamic-graph-preview";
 
-export default function Home() {
+export default async function Home() {
+  const cookieStore = await cookies();
+  const allCookies =
+    typeof cookieStore.getAll === "function" ? cookieStore.getAll() : [];
+  const isSignedIn = allCookies.some((cookie) =>
+    cookie.name.startsWith("better-auth"),
+  );
+
   return (
     <div className="font-body-md text-body-md antialiased selection:bg-primary/30 selection:text-primary-fixed">
       {/*  TopNavBar  */}
@@ -49,18 +57,29 @@ export default function Home() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <a
-            className="hidden md:block text-on-surface-variant font-medium hover:text-primary transition-colors"
-            href="#"
-          >
-            Sign In
-          </a>
-          <a
-            className="bg-primary hover:bg-primary-fixed text-on-primary px-4 py-2 rounded font-medium transition-colors active:scale-95 duration-200"
-            href="#"
-          >
-            Get Started
-          </a>
+          {isSignedIn ? (
+            <Link
+              className="bg-primary hover:bg-primary-fixed text-on-primary px-4 py-2 rounded font-medium transition-colors active:scale-95 duration-200"
+              href="/dashboard"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <a
+                className="hidden md:block text-on-surface-variant font-medium hover:text-primary transition-colors"
+                href="/login"
+              >
+                Sign In
+              </a>
+              <a
+                className="bg-primary hover:bg-primary-fixed text-on-primary px-4 py-2 rounded font-medium transition-colors active:scale-95 duration-200"
+                href="/login"
+              >
+                Get Started
+              </a>
+            </>
+          )}
         </div>
       </nav>
       <main>
@@ -88,7 +107,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <a
                 className="bg-primary hover:bg-primary-fixed text-on-primary px-6 py-3 rounded font-medium transition-all hover:shadow-[0_0_20px_rgba(192,193,255,0.4)] flex items-center justify-center gap-2"
-                href="#"
+                href="/login"
               >
                 Get started free
                 <span className="material-symbols-outlined text-[20px]">

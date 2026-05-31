@@ -111,38 +111,38 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                   projection.
                 </p>
 
-                <div className="space-y-4">
-                  <button
-                    onClick={() => setStep("upload")}
-                    className="w-full bg-[#0F1117] border border-outline-variant hover:border-primary p-4 rounded-DEFAULT flex items-center gap-4 group transition-colors text-left"
-                  >
-                    <div className="w-12 h-12 bg-surface-container rounded border border-outline-variant group-hover:border-primary/50 flex items-center justify-center text-primary">
-                      <UploadCloud className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
-                        Upload new dataset
-                      </h3>
-                      <p className="font-label-mono text-label-mono text-on-surface-variant mt-1">
-                        CSV, JSON, GML supported
-                      </p>
-                    </div>
-                  </button>
+                 <div className="space-y-4">
+                   <button
+                     onClick={() => setStep("upload")}
+                     className="w-full bg-[#0F1117] border border-outline-variant hover:border-primary p-4 rounded-DEFAULT flex items-center gap-4 group transition-colors text-left"
+                   >
+                     <div className="w-12 h-12 bg-surface-container rounded border border-outline-variant group-hover:border-primary/50 flex items-center justify-center text-primary">
+                       <UploadCloud className="w-6 h-6" />
+                     </div>
+                     <div>
+                       <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+                         Upload new dataset
+                       </h3>
+                       <p className="font-label-mono text-label-mono text-on-surface-variant mt-1">
+                         CSV, JSON, GML supported
+                       </p>
+                     </div>
+                   </button>
 
-                  <button className="w-full bg-[#0F1117] border border-outline-variant hover:border-primary p-4 rounded-DEFAULT flex items-center gap-4 group transition-colors text-left">
-                    <div className="w-12 h-12 bg-surface-container rounded border border-outline-variant group-hover:border-primary/50 flex items-center justify-center text-primary">
-                      <Database className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
-                        Use existing dataset
-                      </h3>
-                      <p className="font-label-mono text-label-mono text-on-surface-variant mt-1">
-                        Select from uploaded files
-                      </p>
-                    </div>
-                  </button>
-                </div>
+                   <button className="w-full bg-[#0F1117] border border-outline-variant hover:border-primary p-4 rounded-DEFAULT flex items-center gap-4 group transition-colors text-left">
+                     <div className="w-12 h-12 bg-surface-container rounded border border-outline-variant group-hover:border-primary/50 flex items-center justify-center text-primary">
+                       <Database className="w-6 h-6" />
+                     </div>
+                     <div>
+                       <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+                         Use existing dataset
+                       </h3>
+                       <p className="font-label-mono text-label-mono text-on-surface-variant mt-1">
+                         Select from uploaded files
+                       </p>
+                     </div>
+                   </button>
+                 </div>
               </>
             ) : (
               <>

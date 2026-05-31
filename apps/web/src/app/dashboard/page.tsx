@@ -3,19 +3,18 @@
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { redirect } from "next/navigation";
-import { Plus } from "lucide-react";
-
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { RecentGraphs } from "@/components/dashboard/recent-graphs";
-import { DatasetTimeline } from "@/components/dashboard/dataset-timeline";
+import { RecentDatasets } from "@/components/dashboard/recent-datasets";
+import { OverviewHeader } from "@/components/dashboard/overview-header";
 import { CreateGraphModal } from "@/components/dashboard/create-graph-modal";
 import { useDashboardData } from "../../hooks/dashboard/use-dashboard-data";
 import Loader from "@/components/loader";
 
 export default function DashboardPage() {
   const { data: session, isPending: isAuthPending } = authClient.useSession();
-  const { isLoading: isDataLoading } = useDashboardData();
+  const { stats, isLoading: isDataLoading } = useDashboardData();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (isAuthPending) {
@@ -38,33 +37,14 @@ export default function DashboardPage() {
     <div className="bg-surface text-on-surface font-body-md min-h-screen flex">
       <Sidebar />
 
-      <main className="ml-panel-width grow p-margin-desktop bg-[#0F1117]">
-        {/* Header Section */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">
-              Overview
-            </h2>
-            <p className="text-on-surface-variant font-body-md text-body-md">
-              System health and graph processing metrics.
-            </p>
+      <main className="ml-[var(--sidebar-width,theme(spacing.panel-width))] grow p-margin-desktop bg-[#0F1117] transition-[margin] duration-300">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <OverviewHeader onCreateGraph={() => setIsModalOpen(true)} />
+          <StatsCards stats={stats} isLoading={isDataLoading} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+            <RecentGraphs />
+            <RecentDatasets />
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-inverse-primary hover:bg-primary-container text-white px-6 py-3 rounded-DEFAULT font-label-mono text-label-mono font-medium transition-colors shadow-[0_0_12px_rgba(192,193,255,0.2)] flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Create Graph
-          </button>
-        </div>
-
-        {/* Metrics Row */}
-        <StatsCards />
-
-        {/* Main Content Area: 2 Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
-          <RecentGraphs />
-          <DatasetTimeline />
         </div>
       </main>
 
