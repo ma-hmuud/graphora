@@ -67,6 +67,15 @@ export class DatasetsService {
     });
   }
 
+  async getDataset(userId: number, id: number) {
+    const dataset = await prisma.dataset.findFirst({
+      where: { id, userId },
+    });
+
+    if (!dataset) throw new NotFoundException("Dataset not found");
+    return dataset;
+  }
+
   async updateDataset(userId: number, id: number, input: UpdateDatasetInput) {
     const dataset = await prisma.dataset.findFirst({
       where: { id, userId },

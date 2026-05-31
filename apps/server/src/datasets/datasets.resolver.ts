@@ -20,6 +20,18 @@ export class DatasetsResolver {
     );
   }
 
+  @Query("dataset")
+  async datasetById(
+    @Args("id", { type: () => Int }) id: number,
+    @Session() session: UserSession,
+  ) {
+    const dataset = await this.datasets.getDataset(
+      Number(session.user.id),
+      id,
+    );
+    return withFileUrl(this.datasets, Number(session.user.id), dataset);
+  }
+
   @Mutation("createDataset")
   async createDataset(
     @Args("input", new ZodValidationPipe(createDatasetSchema))

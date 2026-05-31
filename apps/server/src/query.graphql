@@ -2,3 +2,7 @@ type Query {
   hello(name: String): String
   me: User
 }
+
+type Mutation {
+  _empty: String
+}

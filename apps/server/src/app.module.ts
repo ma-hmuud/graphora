@@ -10,6 +10,8 @@ import { AuthResolver } from "./auth/auth.resolver.js";
 import { S3Module } from "./s3/s3.module.js";
 import { DatasetsResolver } from "./datasets/datasets.resolver.js";
 import { DatasetsService } from "./datasets/datasets.service.js";
+import { GraphsResolver } from "./graphs/graphs.resolver.js";
+import { GraphsService } from "./graphs/graphs.service.js";
 import { GraphQLUpload } from "graphql-upload-minimal";
 
 @Module({
@@ -26,6 +28,13 @@ import { GraphQLUpload } from "graphql-upload-minimal";
     AuthModule.forRoot({ auth }),
     S3Module,
   ],
-  providers: [AppResolver, AuthResolver, DatasetsResolver, DatasetsService],
+  providers: [
+    AppResolver,
+    AuthResolver,
+    DatasetsResolver,
+    DatasetsService,
+    GraphsResolver,
+    GraphsService,
+  ],
 })
 export class AppModule {}

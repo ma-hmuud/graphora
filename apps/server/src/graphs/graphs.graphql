@@ -1,0 +1,56 @@
+enum GraphStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum Layout {
+  FORCE
+  CIRCULAR
+  HIERARCHICAL
+}
+
+type Graph {
+  id: Int!
+  name: String!
+  status: GraphStatus!
+  isDirected: Boolean!
+  isWeighted: Boolean!
+  nodeCount: Int
+  edgeCount: Int
+  density: Float
+  componentsCount: Int
+  shareSlug: String
+  layoutPreference: Layout!
+  createdAt: String!
+  updatedAt: String!
+  dataset: Dataset!
+}
+
+input CreateGraphInput {
+  name: String!
+  datasetId: Int!
+  isDirected: Boolean
+  isWeighted: Boolean
+  layoutPreference: Layout
+}
+
+input UpdateGraphInput {
+  name: String
+  status: GraphStatus
+  isDirected: Boolean
+  isWeighted: Boolean
+  layoutPreference: Layout
+  shareSlug: String
+}
+
+extend type Query {
+  graphs: [Graph!]!
+  graph(id: Int!): Graph!
+}
+
+extend type Mutation {
+  createGraph(input: CreateGraphInput!): Graph!
+  updateGraph(id: Int!, input: UpdateGraphInput!): Graph!
+  deleteGraph(id: Int!): Boolean!
+}

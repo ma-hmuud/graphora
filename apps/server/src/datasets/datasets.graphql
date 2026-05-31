@@ -32,9 +32,10 @@ input UpdateDatasetInput {
 
 extend type Query {
   datasets: [Dataset!]!
+  dataset(id: Int!): Dataset!
 }
 
-type Mutation {
+extend type Mutation {
   createDataset(input: CreateDatasetInput!, file: Upload!): Dataset!
   updateDataset(id: Int!, input: UpdateDatasetInput!): Dataset!
   deleteDataset(id: Int!): Boolean!
