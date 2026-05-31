@@ -4,6 +4,7 @@ import { Network, RefreshCw, AlertCircle, MoreVertical } from "lucide-react";
 import { cn } from "@graphora/ui/lib/utils";
 import { useDashboardData } from "@/hooks/dashboard/use-dashboard-data";
 import { Skeleton } from "@/components/skeleton";
+import type { Graph } from "@/lib/types";
 import Link from "next/link";
 
 type GraphStatus = "READY" | "PROCESSING" | "FAILED";
@@ -48,7 +49,7 @@ export function RecentGraphs() {
         ) : (graphs ?? []).length === 0 ? (
           <p className="text-on-surface-variant">No graphs yet.</p>
         ) : (
-          (graphs ?? []).map((graph: any) => (
+          (graphs ?? []).map((graph: Graph) => (
             <div
               key={graph.id}
               className={cn(

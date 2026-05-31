@@ -4,13 +4,14 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apolloClient } from "@/lib/apollo-client";
 import { DATASETS_QUERY, GRAPHS_QUERY } from "@/lib/graphql/queries";
+import type { Dataset, Graph } from "@/lib/types";
 
 // This will eventually fetch from GraphQL
 export function useDashboardData() {
   const datasetsQuery = useQuery({
     queryKey: ["datasets"],
     queryFn: async () => {
-      const { data } = await apolloClient.query({
+      const { data } = await apolloClient.query<{ datasets: Dataset[] }>({
         query: DATASETS_QUERY,
         fetchPolicy: "network-only",
       });
@@ -21,7 +22,7 @@ export function useDashboardData() {
   const graphsQuery = useQuery({
     queryKey: ["graphs"],
     queryFn: async () => {
-      const { data } = await apolloClient.query({
+      const { data } = await apolloClient.query<{ graphs: Graph[] }>({
         query: GRAPHS_QUERY,
         fetchPolicy: "network-only",
       });
@@ -33,13 +34,11 @@ export function useDashboardData() {
     const datasets = datasetsQuery.data ?? [];
     const graphs = graphsQuery.data ?? [];
     const nodesAnalyzed = graphs.reduce(
-      (total: number, graph: { nodeCount?: number | null }) =>
-        total + (graph.nodeCount ?? 0),
+      (total: number, graph) => total + (graph.nodeCount ?? 0),
       0,
     );
     const edgesAnalyzed = graphs.reduce(
-      (total: number, graph: { edgeCount?: number | null }) =>
-        total + (graph.edgeCount ?? 0),
+      (total: number, graph) => total + (graph.edgeCount ?? 0),
       0,
     );
 

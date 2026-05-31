@@ -109,7 +109,7 @@ export function Sidebar() {
           const isActive = pathname === link.href;
           const Icon = link.icon;
           return (
-            <Link
+            <a
               key={link.name}
               href={link.href}
               className={cn(
@@ -128,7 +128,7 @@ export function Sidebar() {
               >
                 {link.name}
               </span>
-            </Link>
+            </a>
           );
         })}
       </div>

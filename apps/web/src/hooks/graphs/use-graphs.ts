@@ -3,28 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { apolloClient } from "@/lib/apollo-client";
 import { GRAPHS_QUERY } from "@/lib/graphql/queries";
-
-type GraphDataset = {
-  id: number;
-  name: string;
-};
-
-type Graph = {
-  id: number;
-  name: string;
-  status: "PROCESSING" | "READY" | "FAILED";
-  isDirected: boolean;
-  isWeighted: boolean;
-  nodeCount?: number | null;
-  edgeCount?: number | null;
-  density?: number | null;
-  componentsCount?: number | null;
-  shareSlug?: string | null;
-  layoutPreference: "FORCE" | "CIRCULAR" | "HIERARCHICAL";
-  createdAt: string;
-  updatedAt: string;
-  dataset: GraphDataset;
-};
+import type { Graph } from "@/lib/types";
 
 type GraphsResponse = {
   graphs: Graph[];

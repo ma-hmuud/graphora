@@ -15,7 +15,7 @@ interface Metric {
   value: string;
   trend?: string;
   trendUp?: boolean;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 type Stats = {

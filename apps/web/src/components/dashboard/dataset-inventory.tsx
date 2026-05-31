@@ -3,6 +3,7 @@
 import { Database, UploadCloud } from "lucide-react";
 import { useDashboardData } from "@/hooks/dashboard/use-dashboard-data";
 import { Skeleton } from "@/components/skeleton";
+import type { Dataset, Graph } from "@/lib/types";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
   notation: "compact",
@@ -12,7 +13,7 @@ const numberFormatter = new Intl.NumberFormat("en-US", {
 export function DatasetInventory() {
   const { datasets, graphs, isLoading } = useDashboardData();
   const graphByDatasetId = new Map(
-    (graphs ?? []).map((graph: any) => [graph.dataset.id, graph]),
+    (graphs ?? []).map((graph: Graph) => [graph.dataset.id, graph]),
   );
 
   return (
@@ -79,7 +80,7 @@ export function DatasetInventory() {
               </tr>
             </thead>
             <tbody>
-              {(datasets ?? []).map((dataset: any) => {
+              {(datasets ?? []).map((dataset: Dataset) => {
                 const graph = graphByDatasetId.get(dataset.id);
                 const densityPercent = graph?.density
                   ? Math.round(graph.density * 100)

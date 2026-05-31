@@ -3,18 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { apolloClient } from "@/lib/apollo-client";
 import { DATASETS_QUERY } from "@/lib/graphql/queries";
-
-type Dataset = {
-  id: number;
-  name: string;
-  description?: string | null;
-  sizeBytes?: number | null;
-  rowCount?: number | null;
-  status: "PROCESSING" | "READY" | "FAILED";
-  createdAt: string;
-  updatedAt: string;
-  fileUrl?: string | null;
-};
+import type { Dataset } from "@/lib/types";
 
 type DatasetsResponse = {
   datasets: Dataset[];

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Database } from "lucide-react";
 import { useDashboardData } from "@/hooks/dashboard/use-dashboard-data";
 import { Skeleton } from "@/components/skeleton";
+import type { Dataset } from "@/lib/types";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
   notation: "compact",
@@ -49,7 +50,7 @@ export function RecentDatasets() {
         <p className="text-on-surface-variant">No datasets yet.</p>
       ) : (
         <div className="space-y-3">
-          {(datasets ?? []).slice(0, 5).map((dataset: any) => (
+          {(datasets ?? []).slice(0, 5).map((dataset: Dataset) => (
             <Link
               key={dataset.id}
               href={`/dashboard/datasets/${dataset.id}`}

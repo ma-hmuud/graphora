@@ -42,7 +42,7 @@ export default function DatasetDetailPage() {
   return (
     <div className="bg-surface text-on-surface font-body-md min-h-screen flex">
       <Sidebar />
-      <main className="ml-[var(--sidebar-width,theme(spacing.panel-width))] grow p-margin-desktop bg-[#0F1117] transition-[margin] duration-300">
+      <main className="ml-(--sidebar-width,var(--spacing-panel-width)) grow p-margin-desktop bg-[#0F1117] transition-[margin] duration-300">
         <div className="max-w-5xl mx-auto space-y-6">
           <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>

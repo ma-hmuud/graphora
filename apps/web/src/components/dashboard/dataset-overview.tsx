@@ -148,16 +148,14 @@ function usePapaPreview(
       download: true,
       header: false,
       skipEmptyLines: true,
-      complete: (results: any) => {
+      complete: (results: Papa.ParseResult<string[]>) => {
         if (isCancelled) return;
-        const rows = (results.data as string[][]).filter(
-          (row) => row.length > 0,
-        );
+        const rows = results.data.filter((row: string[]) => row.length > 0);
         const rowCount = rows.length;
         const columnCount = rows[0]?.length ?? 0;
         const uniqueValues = new Set<string>();
-        rows.forEach((row) => {
-          row.forEach((cell) => {
+        rows.forEach((row: string[]) => {
+          row.forEach((cell: string) => {
             if (cell) uniqueValues.add(cell);
           });
         });
@@ -173,7 +171,7 @@ function usePapaPreview(
           isFetching: false,
         });
       },
-      error: (error: any) => {
+      error: (error: Error) => {
         if (isCancelled) return;
         setState({ data: undefined, error, isFetching: false });
       },
