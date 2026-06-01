@@ -1,6 +1,10 @@
-FROM oven/bun:1 AS base
+# Build stage with Node.js (to use npm/pnpm)
+FROM node:22-slim AS base
 
 WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@10.33.0
 
 # Copy monorepo files
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
@@ -10,20 +14,16 @@ COPY packages/db/package.json ./packages/db/
 COPY packages/env/package.json ./packages/env/
 COPY packages/config/package.json ./packages/config/
 
-# Install pnpm
-RUN curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=10.33.0 sh -
-ENV PATH="/root/.local/share/pnpm:$PATH"
-
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
+# Copy source code and config files
 COPY apps/server ./apps/server
 COPY packages/auth ./packages/auth
 COPY packages/db ./packages/db
 COPY packages/env ./packages/env
 COPY packages/config ./packages/config
-COPY tsconfig.json ./
+COPY tsconfig.json turbo.json ./
 
 # Generate Prisma client
 RUN pnpm --filter=@graphora/db db:generate
@@ -31,7 +31,7 @@ RUN pnpm --filter=@graphora/db db:generate
 # Build
 RUN pnpm build --filter=server
 
-# Production image
+# Production image with Bun
 FROM oven/bun:1-slim AS production
 
 WORKDIR /app
