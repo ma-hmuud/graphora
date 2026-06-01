@@ -11,7 +11,8 @@ COPY packages/env/package.json ./packages/env/
 COPY packages/config/package.json ./packages/config/
 
 # Install pnpm
-RUN npm install -g pnpm@10.33.0
+RUN curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=10.33.0 sh -
+ENV PATH="/root/.local/share/pnpm:$PATH"
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
