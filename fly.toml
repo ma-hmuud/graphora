@@ -2,8 +2,7 @@ app = "graphora-ytaqpg"
 primary_region = "ams"
 
 [build]
-  dockerfile = "../Dockerfile"
-  context = ".."
+  dockerfile = "Dockerfile"
 
 [http_service]
   internal_port = 3001
