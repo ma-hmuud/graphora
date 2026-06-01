@@ -2,36 +2,37 @@
 
 import { Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { deleteDataset } from "@/lib/datasets";
 import { tryCatch } from "@/lib/try-catch";
 
-type DeleteDatasetModalProps = {
+type DeleteModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  dataset?: {
+  t?: {
     id: number;
     name: string;
   };
   onDeleted?: () => void;
+  deleteT: (id: number) => Promise<any>;
 };
 
-export function DeleteDatasetModal({
+export function DeleteModal({
   isOpen,
   onClose,
-  dataset,
+  t,
   onDeleted,
-}: DeleteDatasetModalProps) {
-  if (!isOpen || !dataset) return null;
+  deleteT,
+}: DeleteModalProps) {
+  if (!isOpen || !t) return null;
 
   const handleDelete = async () => {
-    const { error } = await tryCatch(deleteDataset(dataset.id));
+    onClose();
+    const { error } = await tryCatch(deleteT(t.id));
     if (error) {
-      toast(error.message || "Failed to delete dataset.");
+      toast(error.message || `Failed to delete ${t.name}.`);
       return;
     }
-    toast("Dataset deleted.");
+    toast(`${t.name} deleted.`);
     onDeleted?.();
-    onClose();
   };
 
   return (
@@ -43,7 +44,7 @@ export function DeleteDatasetModal({
       <div className="bg-[#101521] border border-outline-variant rounded-DEFAULT p-6 max-w-md w-full shadow-2xl relative z-10">
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-headline-md text-headline-md text-on-surface">
-            Delete Dataset
+            Delete
           </h2>
           <button
             onClick={onClose}
@@ -53,8 +54,9 @@ export function DeleteDatasetModal({
           </button>
         </div>
         <p className="text-on-surface-variant mb-6">
-          This will permanently delete <span className="text-on-surface">{dataset.name}</span> and
-          its files. This action cannot be undone.
+          This will permanently delete{" "}
+          <span className="text-on-surface">"{t.name}"</span> and its files.
+          This action cannot be undone.
         </p>
         <div className="flex justify-end gap-3">
           <button

@@ -4,14 +4,14 @@ import { useState } from "react";
 import { redirect, useParams, useRouter } from "next/navigation";
 import { Edit, ExternalLink, Trash2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { Sidebar } from "@/components/dashboard/sidebar";
 import { useDataset } from "@/hooks/datasets/use-dataset";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/skeleton";
 import { EditDatasetModal } from "@/components/dashboard/edit-dataset-modal";
-import { DeleteDatasetModal } from "@/components/dashboard/delete-dataset-modal";
+import { DeleteModal } from "@/components/dashboard/delete-modal";
 import { DatasetOverview } from "@/components/dashboard/dataset-overview";
 import { formatDate } from "@/lib/format-date";
+import { deleteDataset } from "@/lib/datasets";
 
 export default function DatasetDetailPage() {
   const params = useParams<{ id: string }>();
@@ -41,8 +41,7 @@ export default function DatasetDetailPage() {
 
   return (
     <div className="bg-surface text-on-surface font-body-md min-h-screen flex">
-      <Sidebar />
-      <main className="ml-(--sidebar-width,var(--spacing-panel-width)) grow p-margin-desktop bg-[#0F1117] transition-[margin] duration-300">
+      <main className="grow transition-[margin] duration-300">
         <div className="max-w-5xl mx-auto space-y-6">
           <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
@@ -94,12 +93,6 @@ export default function DatasetDetailPage() {
               <p className="text-on-surface-variant">Dataset not found.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                  <p className="text-on-surface-variant text-xs">Status</p>
-                  <p className="text-on-surface font-label-mono text-label-mono">
-                    {dataset.status}
-                  </p>
-                </div>
                 <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
                   <p className="text-on-surface-variant text-xs">Size</p>
                   <p className="text-on-surface font-label-mono text-label-mono">
@@ -162,14 +155,15 @@ export default function DatasetDetailPage() {
           queryClient.invalidateQueries({ queryKey: ["datasets"] });
         }}
       />
-      <DeleteDatasetModal
+      <DeleteModal
         isOpen={isDeleteOpen}
-        dataset={dataset ? { id: dataset.id, name: dataset.name } : undefined}
+        t={dataset ? { id: dataset.id, name: dataset.name } : undefined}
         onClose={() => setIsDeleteOpen(false)}
         onDeleted={() => {
           queryClient.invalidateQueries({ queryKey: ["datasets"] });
           router.push("/dashboard/datasets");
         }}
+        deleteT={deleteDataset}
       />
     </div>
   );

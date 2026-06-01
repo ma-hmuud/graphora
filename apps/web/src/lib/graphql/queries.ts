@@ -8,7 +8,6 @@ export const DATASETS_QUERY = gql`
       description
       sizeBytes
       rowCount
-      status
       createdAt
       updatedAt
       fileUrl
@@ -24,7 +23,6 @@ export const DATASET_QUERY = gql`
       description
       sizeBytes
       rowCount
-      status
       createdAt
       updatedAt
       fileUrl
@@ -45,7 +43,6 @@ export const GRAPHS_QUERY = gql`
       density
       componentsCount
       shareSlug
-      layoutPreference
       createdAt
       updatedAt
       dataset {
@@ -69,7 +66,7 @@ export const GRAPH_QUERY = gql`
       density
       componentsCount
       shareSlug
-      layoutPreference
+      graphData
       createdAt
       updatedAt
       dataset {

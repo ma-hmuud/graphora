@@ -38,6 +38,8 @@ async function requestGraphql<T>(
   return payload.data;
 }
 
+import type { Dataset } from "@/lib/types";
+
 export async function createDataset(input: {
   name: string;
   description?: string;
@@ -46,7 +48,10 @@ export async function createDataset(input: {
   const operations = {
     query:
       "mutation CreateDataset($input: CreateDatasetInput!, $file: Upload!) { createDataset(input: $input, file: $file) { id name description s3Key sizeBytes status errorMessage createdAt updatedAt fileUrl } }",
-    variables: { input: { name: input.name, description: input.description }, file: null },
+    variables: {
+      input: { name: input.name, description: input.description },
+      file: null,
+    },
   };
 
   const form = new FormData();
@@ -54,7 +59,7 @@ export async function createDataset(input: {
   form.append("map", JSON.stringify({ "0": ["variables.file"] }));
   form.append("0", input.file);
 
-  return requestGraphql<{ createDataset: unknown }>(form, true);
+  return requestGraphql<{ createDataset: Dataset }>(form, true);
 }
 
 export async function listDatasets() {
@@ -63,7 +68,7 @@ export async function listDatasets() {
       "query Datasets { datasets { id name description s3Key sizeBytes status errorMessage createdAt updatedAt fileUrl } }",
   });
 
-  return requestGraphql<{ datasets: unknown }>(body);
+  return requestGraphql<{ datasets: Dataset[] }>(body);
 }
 
 export async function updateDataset(input: {
@@ -74,16 +79,18 @@ export async function updateDataset(input: {
   const body = JSON.stringify({
     query:
       "mutation UpdateDataset($id: Int!, $input: UpdateDatasetInput!) { updateDataset(id: $id, input: $input) { id name description s3Key sizeBytes status errorMessage createdAt updatedAt fileUrl } }",
-    variables: { id: input.id, input: { name: input.name, description: input.description } },
+    variables: {
+      id: input.id,
+      input: { name: input.name, description: input.description },
+    },
   });
 
-  return requestGraphql<{ updateDataset: unknown }>(body);
+  return requestGraphql<{ updateDataset: Dataset }>(body);
 }
 
 export async function deleteDataset(id: number) {
   const body = JSON.stringify({
-    query:
-      "mutation DeleteDataset($id: Int!) { deleteDataset(id: $id) }",
+    query: "mutation DeleteDataset($id: Int!) { deleteDataset(id: $id) }",
     variables: { id },
   });
 

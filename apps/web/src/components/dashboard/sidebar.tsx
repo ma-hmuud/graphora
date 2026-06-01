@@ -24,11 +24,10 @@ const navLinks = [
   { name: "Graphs", href: "/dashboard/graphs", icon: Network },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isCollapsed }: { isCollapsed: boolean }) {
   const { data: session } = authClient.useSession();
   const pathname = usePathname();
   const router = useRouter();
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -49,10 +48,7 @@ export function Sidebar() {
 
   return (
     <nav
-      className={cn(
-        "bg-surface-container-low text-primary-fixed-dim font-label-mono text-label-mono fixed left-0 top-0 h-full z-40 flex flex-col py-6 border-r border-outline-variant transition-[width] duration-300",
-        isCollapsed ? "w-18" : "w-panel-width",
-      )}
+      className={`h-screen py-6 sticky top-0 border-r bg-background flex flex-col transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "w-64"}`}
     >
       {/* Header */}
       <div
@@ -87,20 +83,6 @@ export function Sidebar() {
             {user?.name || "System Architect"}
           </p>
         </div>
-        <button
-          onClick={() => setIsCollapsed((value) => !value)}
-          className={cn(
-            "ml-auto text-on-surface-variant hover:text-primary transition-colors",
-            isCollapsed && "ml-0",
-          )}
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {isCollapsed ? (
-            <ChevronRight className="w-4 h-4" />
-          ) : (
-            <ChevronLeft className="w-4 h-4" />
-          )}
-        </button>
       </div>
 
       {/* Navigation Links */}
@@ -109,7 +91,7 @@ export function Sidebar() {
           const isActive = pathname === link.href;
           const Icon = link.icon;
           return (
-            <a
+            <Link
               key={link.name}
               href={link.href}
               className={cn(
@@ -128,7 +110,7 @@ export function Sidebar() {
               >
                 {link.name}
               </span>
-            </a>
+            </Link>
           );
         })}
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Papa from "papaparse";
 import { Skeleton } from "@/components/skeleton";
 
@@ -121,6 +121,8 @@ export function DatasetOverview({ fileUrl, isLoading }: DatasetOverviewProps) {
   );
 }
 
+const previewCache = new Map<string, OverviewMetrics>();
+
 function usePapaPreview(
   fileUrl: string | null | undefined,
   isLoading: boolean,
@@ -135,9 +137,20 @@ function usePapaPreview(
     isFetching: false,
   });
 
+  const cacheKey = useMemo(() => fileUrl ?? "", [fileUrl]);
+
   useEffect(() => {
     if (!fileUrl || isLoading) {
       setState((prev) => ({ ...prev, isFetching: false }));
+      return;
+    }
+
+    if (cacheKey && previewCache.has(cacheKey)) {
+      setState({
+        data: previewCache.get(cacheKey),
+        error: undefined,
+        isFetching: false,
+      });
       return;
     }
 
@@ -160,16 +173,14 @@ function usePapaPreview(
           });
         });
 
-        setState({
-          data: {
-            rowCount,
-            columnCount,
-            preview: rows.slice(0, 10),
-            uniqueCount: uniqueValues.size,
-          },
-          error: undefined,
-          isFetching: false,
-        });
+        const metrics = {
+          rowCount,
+          columnCount,
+          preview: rows.slice(0, 10),
+          uniqueCount: uniqueValues.size,
+        };
+        previewCache.set(cacheKey, metrics);
+        setState({ data: metrics, error: undefined, isFetching: false });
       },
       error: (error: Error) => {
         if (isCancelled) return;
@@ -180,7 +191,7 @@ function usePapaPreview(
     return () => {
       isCancelled = true;
     };
-  }, [fileUrl, isLoading]);
+  }, [cacheKey, fileUrl, isLoading]);
 
   return state;
 }

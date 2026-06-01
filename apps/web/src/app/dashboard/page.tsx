@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { redirect } from "next/navigation";
-import { Sidebar } from "@/components/dashboard/sidebar";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { RecentGraphs } from "@/components/dashboard/recent-graphs";
 import { RecentDatasets } from "@/components/dashboard/recent-datasets";
@@ -35,9 +34,7 @@ export default function DashboardPage() {
 
   return (
     <div className="bg-surface text-on-surface font-body-md min-h-screen flex">
-      <Sidebar />
-
-      <main className="ml-(--sidebar-width,var(--spacing-panel-width)) grow p-margin-desktop bg-[#0F1117] transition-[margin] duration-300">
+      <main className="transition-[margin] grow duration-300">
         <div className="max-w-6xl mx-auto space-y-8">
           <OverviewHeader onCreateGraph={() => setIsModalOpen(true)} />
           <StatsCards stats={stats} isLoading={isDataLoading} />

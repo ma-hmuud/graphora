@@ -2,14 +2,51 @@
 
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { useMemo, useState } from "react";
+import {
+  AlertCircle,
+  Network,
+  Plus,
+  RefreshCcw,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { Sidebar } from "@/components/dashboard/sidebar";
 import { useGraphs } from "@/hooks/graphs/use-graphs";
 import { Skeleton } from "@/components/skeleton";
+import { apolloClient } from "@/lib/apollo-client";
+import { DELETE_GRAPH_MUTATION } from "@/lib/graphql/mutations";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { formatDate } from "@/lib/format-date";
+import { CreateGraphModal } from "@/components/dashboard/create-graph-modal";
+import { DeleteModal } from "@/components/dashboard/delete-modal";
 
 export default function GraphsPage() {
   const { data: session, isPending: isAuthPending } = authClient.useSession();
   const { data: graphs, isLoading } = useGraphs();
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deletingGraph, setDeletingGraph] = useState<
+    { id: number; name: string } | undefined
+  >(undefined);
+
+  const filteredGraphs = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return graphs ?? [];
+    return (graphs ?? []).filter((graph) =>
+      [graph.name, graph.dataset.name, graph.status]
+        .join(" ")
+        .toLowerCase()
+        .includes(term),
+    );
+  }, [graphs, search]);
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["graphs"] });
+    toast("Refreshing graphs...");
+  };
 
   if (isAuthPending) {
     return (
@@ -29,8 +66,7 @@ export default function GraphsPage() {
 
   return (
     <div className="bg-surface text-on-surface font-body-md min-h-screen flex">
-      <Sidebar />
-      <main className="ml-[var(--sidebar-width,theme(spacing.panel-width))] grow p-margin-desktop bg-[#0F1117] transition-[margin] duration-300">
+      <main className="grow transition-[margin] duration-300">
         <div className="max-w-6xl mx-auto space-y-6">
           <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
@@ -41,7 +77,35 @@ export default function GraphsPage() {
                 Saved graph projects with metrics and datasets.
               </p>
             </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-inverse-primary hover:bg-primary-container text-white px-6 py-3 rounded-DEFAULT font-label-mono text-label-mono font-medium transition-colors shadow-[0_0_12px_rgba(192,193,255,0.2)] flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Create Graph
+              </button>
+              <button
+                onClick={handleRefresh}
+                className="bg-[#1E293B] hover:bg-secondary-container text-white px-6 py-3 rounded-DEFAULT font-label-mono text-label-mono font-medium transition-colors flex items-center gap-2"
+              >
+                <RefreshCcw className="w-4 h-4" />
+                Refresh Graphs
+              </button>
+            </div>
           </header>
+
+          <div className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-4">
+            <div className="flex items-center gap-3">
+              <Search className="w-4 h-4 text-on-surface-variant" />
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search graphs by name, dataset, status"
+                className="w-full bg-transparent text-on-surface text-sm focus:outline-none"
+              />
+            </div>
+          </div>
 
           <section className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6">
             {isLoading ? (
@@ -58,39 +122,94 @@ export default function GraphsPage() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(graphs ?? []).length === 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {filteredGraphs.length === 0 ? (
                   <p className="text-on-surface-variant">No graphs for now.</p>
                 ) : (
-                  (graphs ?? []).map((graph) => (
-                    <Link
+                  filteredGraphs.map((graph) => (
+                    <div
                       key={graph.id}
-                      href={`/dashboard/graphs/${graph.id}`}
-                      className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4 hover:border-primary/40 transition-colors"
+                      className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-5 hover:border-primary/40 transition-colors group"
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-headline-sm text-headline-sm text-on-surface">
+                      <div className="flex items-start justify-between gap-3">
+                        <Link href={`/dashboard/graphs/${graph.id}`}>
+                          <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
                             {graph.name}
                           </h3>
                           <p className="text-on-surface-variant text-xs mt-1">
                             Dataset: {graph.dataset.name}
                           </p>
+                        </Link>
+                        {graph.status === "PROCESSING" ? (
+                          <>
+                            <RefreshCw className="w-5 h-5 animate-spin" />
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#f39c12] rounded-full animate-ping opacity-75" />
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#f39c12] rounded-full" />
+                          </>
+                        ) : graph.status === "FAILED" ? (
+                          <AlertCircle className="w-5 h-5" />
+                        ) : (
+                          <Network className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div className="mt-4 grid grid-cols-2 gap-3">
+                        <div className="bg-[#0B0F19] border border-outline-variant/40 rounded-DEFAULT p-3">
+                          <p className="text-xs text-on-surface-variant">
+                            Nodes
+                          </p>
+                          <p className="text-on-surface font-label-mono text-label-mono">
+                            {graph.nodeCount ?? "-"}
+                          </p>
                         </div>
-                        <span className="text-on-surface-variant font-label-mono text-label-mono">
-                          {graph.status}
-                        </span>
+                        <div className="bg-[#0B0F19] border border-outline-variant/40 rounded-DEFAULT p-3">
+                          <p className="text-xs text-on-surface-variant">
+                            Edges
+                          </p>
+                          <p className="text-on-surface font-label-mono text-label-mono">
+                            {graph.edgeCount ?? "-"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="mt-4 text-on-surface-variant font-label-mono text-label-mono">
-                        {graph.nodeCount ?? "-"} nodes · {graph.edgeCount ?? "-"} edges
+                      <div className="mt-4 flex items-center justify-between text-xs text-on-surface-variant">
+                        <span>{formatDate(graph.updatedAt)}</span>
+                        <button
+                          onClick={() =>
+                            setDeletingGraph({ id: graph.id, name: graph.name })
+                          }
+                          className="text-error font-label-mono text-label-mono"
+                        >
+                          Delete
+                        </button>
                       </div>
-                    </Link>
+                    </div>
                   ))
                 )}
               </div>
             )}
           </section>
         </div>
+        <CreateGraphModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+        <DeleteModal
+          isOpen={Boolean(deletingGraph)}
+          t={deletingGraph}
+          onClose={() => setDeletingGraph(undefined)}
+          onDeleted={() => {
+            queryClient.invalidateQueries({ queryKey: ["graphs"] });
+          }}
+          deleteT={async (id: number) => {
+            try {
+              await apolloClient.mutate({
+                mutation: DELETE_GRAPH_MUTATION,
+                variables: { id },
+              });
+            } catch (error: any) {
+              throw error;
+            }
+          }}
+        />
       </main>
     </div>
   );

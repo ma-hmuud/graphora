@@ -5,14 +5,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Search, UploadCloud } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { Sidebar } from "@/components/dashboard/sidebar";
 import { useDatasets } from "@/hooks/datasets/use-datasets";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/skeleton";
 import { UploadDatasetModal } from "@/components/dashboard/upload-dataset-modal";
 import { EditDatasetModal } from "@/components/dashboard/edit-dataset-modal";
-import { DeleteDatasetModal } from "@/components/dashboard/delete-dataset-modal";
+import { DeleteModal } from "@/components/dashboard/delete-modal";
 import { formatDate } from "@/lib/format-date";
+import { deleteDataset } from "@/lib/datasets";
 
 export default function DatasetsPage() {
   const { data: session, isPending: isAuthPending } = authClient.useSession();
@@ -31,7 +31,7 @@ export default function DatasetsPage() {
     const term = search.trim().toLowerCase();
     if (!term) return datasets ?? [];
     return (datasets ?? []).filter((dataset) =>
-      [dataset.name, dataset.description ?? "", dataset.status]
+      [dataset.name, dataset.description ?? ""]
         .join(" ")
         .toLowerCase()
         .includes(term),
@@ -56,8 +56,7 @@ export default function DatasetsPage() {
 
   return (
     <div className="bg-surface text-on-surface font-body-md min-h-screen flex">
-      <Sidebar />
-      <main className="ml-(--sidebar-width,var(--spacing-panel-width)) grow p-margin-desktop bg-[#0F1117] transition-[margin] duration-300">
+      <main className="grow transition-[margin] duration-300">
         <div className="max-w-6xl mx-auto space-y-6">
           <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
@@ -113,9 +112,6 @@ export default function DatasetsPage() {
                         Name
                       </th>
                       <th className="py-3 pr-4 border-b border-outline-variant">
-                        Status
-                      </th>
-                      <th className="py-3 pr-4 border-b border-outline-variant">
                         Size
                       </th>
                       <th className="py-3 border-b border-outline-variant">
@@ -149,9 +145,6 @@ export default function DatasetsPage() {
                             >
                               {dataset.name}
                             </Link>
-                          </td>
-                          <td className="py-4 pr-4 text-on-surface-variant font-label-mono text-label-mono">
-                            {dataset.status}
                           </td>
                           <td className="py-4 pr-4 text-on-surface-variant font-label-mono text-label-mono">
                             {dataset.sizeBytes
@@ -219,13 +212,14 @@ export default function DatasetsPage() {
           queryClient.invalidateQueries({ queryKey: ["datasets"] })
         }
       />
-      <DeleteDatasetModal
+      <DeleteModal
         isOpen={Boolean(deletingDataset)}
-        dataset={deletingDataset}
+        t={deletingDataset}
         onClose={() => setDeletingDataset(undefined)}
         onDeleted={() =>
           queryClient.invalidateQueries({ queryKey: ["datasets"] })
         }
+        deleteT={deleteDataset}
       />
     </div>
   );

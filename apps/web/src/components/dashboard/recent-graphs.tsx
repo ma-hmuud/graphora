@@ -50,7 +50,8 @@ export function RecentGraphs() {
           <p className="text-on-surface-variant">No graphs yet.</p>
         ) : (
           (graphs ?? []).map((graph: Graph) => (
-            <div
+            <Link
+              href={`/dashboard/graphs/${graph.id}`}
               key={graph.id}
               className={cn(
                 "bg-surface-container p-4 border transition-colors rounded-DEFAULT flex justify-between items-center group cursor-pointer",
@@ -134,7 +135,7 @@ export function RecentGraphs() {
                   <MoreVertical className="w-5 h-5" />
                 </button>
               </div>
-            </div>
+            </Link>
           ))
         )}
       </div>

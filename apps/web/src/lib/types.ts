@@ -1,6 +1,4 @@
-export type DatasetStatus = "PROCESSING" | "READY" | "FAILED";
 export type GraphStatus = "PROCESSING" | "READY" | "FAILED";
-export type LayoutPreference = "FORCE" | "CIRCULAR" | "HIERARCHICAL";
 
 export type Dataset = {
   id: number;
@@ -8,7 +6,6 @@ export type Dataset = {
   description?: string | null;
   sizeBytes?: number | null;
   rowCount?: number | null;
-  status: DatasetStatus;
   createdAt: string;
   updatedAt: string;
   fileUrl?: string | null;
@@ -30,7 +27,7 @@ export type Graph = {
   density?: number | null;
   componentsCount?: number | null;
   shareSlug?: string | null;
-  layoutPreference: LayoutPreference;
+  graphData?: unknown | null;
   createdAt: string;
   updatedAt: string;
   dataset: GraphDataset;

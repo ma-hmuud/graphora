@@ -1,11 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { X, UploadCloud, Database, ArrowRight } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { X, UploadCloud, Database, ArrowRight, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createDataset } from "@/lib/datasets";
 import { tryCatch } from "@/lib/try-catch";
 import { toast } from "sonner";
+import { useDatasets } from "@/hooks/datasets/use-datasets";
+import { apolloClient } from "@/lib/apollo-client";
+import { CREATE_GRAPH_MUTATION } from "@/lib/graphql/mutations";
+import type { Dataset } from "@/lib/types";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CreateGraphModalProps {
   isOpen: boolean;
@@ -14,10 +19,12 @@ interface CreateGraphModalProps {
 
 export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [step, setStep] = useState<"select" | "upload">("select");
+  const [step, setStep] = useState<"select" | "upload" | "existing">("select");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [search, setSearch] = useState("");
+  const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [status, setStatus] = useState<
     "idle" | "uploading" | "success" | "error"
   >("idle");
@@ -28,6 +35,8 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
     setName("");
     setDescription("");
     setFile(null);
+    setSearch("");
+    setSelectedDataset(null);
     setStatus("idle");
     setMessage("");
   };
@@ -45,6 +54,8 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
     }
   };
 
+  const queryClient = useQueryClient();
+
   const handleUpload = async () => {
     if (!file || !name.trim()) {
       setStatus("error");
@@ -55,7 +66,7 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
     setStatus("uploading");
     setMessage("Uploading dataset to Graphora...");
 
-    const { error } = await tryCatch(
+    const { data, error } = await tryCatch(
       createDataset({
         name: name.trim(),
         description: description.trim() || undefined,
@@ -69,9 +80,57 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
       return;
     }
 
+    const created = data?.createDataset;
+    if (created) {
+      setSelectedDataset(created);
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["datasets"] });
     setStatus("success");
-    toast("Dataset uploaded. You can create a graph now.");
-    onClose();
+    toast("Dataset uploaded. Select it to create a graph.");
+    setStep("existing");
+  };
+
+  const { data: datasets, isLoading: isDatasetsLoading } = useDatasets();
+
+  const filteredDatasets = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return datasets ?? [];
+    return (datasets ?? []).filter((dataset) =>
+      [dataset.name, dataset.description ?? ""]
+        .join(" ")
+        .toLowerCase()
+        .includes(term),
+    );
+  }, [datasets, search]);
+
+  const handleCreateGraph = async () => {
+    if (!selectedDataset) {
+      toast("Select a dataset.");
+      return;
+    }
+    handleClose();
+
+    const { error } = await tryCatch(
+      apolloClient.mutate({
+        mutation: CREATE_GRAPH_MUTATION,
+        variables: {
+          input: {
+            name: `${selectedDataset.name} Graph`,
+            datasetId: selectedDataset.id,
+          },
+        },
+      }),
+    );
+
+    queryClient.invalidateQueries({ queryKey: ["graphs"] });
+
+    if (error) {
+      toast(error.message || "Failed to create graph.");
+      return;
+    }
+
+    toast("Graph processing started.");
   };
 
   return (
@@ -111,40 +170,43 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                   projection.
                 </p>
 
-                 <div className="space-y-4">
-                   <button
-                     onClick={() => setStep("upload")}
-                     className="w-full bg-[#0F1117] border border-outline-variant hover:border-primary p-4 rounded-DEFAULT flex items-center gap-4 group transition-colors text-left"
-                   >
-                     <div className="w-12 h-12 bg-surface-container rounded border border-outline-variant group-hover:border-primary/50 flex items-center justify-center text-primary">
-                       <UploadCloud className="w-6 h-6" />
-                     </div>
-                     <div>
-                       <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
-                         Upload new dataset
-                       </h3>
-                       <p className="font-label-mono text-label-mono text-on-surface-variant mt-1">
-                         CSV, JSON, GML supported
-                       </p>
-                     </div>
-                   </button>
+                <div className="space-y-4">
+                  <button
+                    onClick={() => setStep("upload")}
+                    className="w-full bg-[#0F1117] border border-outline-variant hover:border-primary p-4 rounded-DEFAULT flex items-center gap-4 group transition-colors text-left"
+                  >
+                    <div className="w-12 h-12 bg-surface-container rounded border border-outline-variant group-hover:border-primary/50 flex items-center justify-center text-primary">
+                      <UploadCloud className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+                        Upload new dataset
+                      </h3>
+                      <p className="font-label-mono text-label-mono text-on-surface-variant mt-1">
+                        CSV, JSON, GML supported
+                      </p>
+                    </div>
+                  </button>
 
-                   <button className="w-full bg-[#0F1117] border border-outline-variant hover:border-primary p-4 rounded-DEFAULT flex items-center gap-4 group transition-colors text-left">
-                     <div className="w-12 h-12 bg-surface-container rounded border border-outline-variant group-hover:border-primary/50 flex items-center justify-center text-primary">
-                       <Database className="w-6 h-6" />
-                     </div>
-                     <div>
-                       <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
-                         Use existing dataset
-                       </h3>
-                       <p className="font-label-mono text-label-mono text-on-surface-variant mt-1">
-                         Select from uploaded files
-                       </p>
-                     </div>
-                   </button>
-                 </div>
+                  <button
+                    onClick={() => setStep("existing")}
+                    className="w-full bg-[#0F1117] border border-outline-variant hover:border-primary p-4 rounded-DEFAULT flex items-center gap-4 group transition-colors text-left"
+                  >
+                    <div className="w-12 h-12 bg-surface-container rounded border border-outline-variant group-hover:border-primary/50 flex items-center justify-center text-primary">
+                      <Database className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+                        Use existing dataset
+                      </h3>
+                      <p className="font-label-mono text-label-mono text-on-surface-variant mt-1">
+                        Select from uploaded files
+                      </p>
+                    </div>
+                  </button>
+                </div>
               </>
-            ) : (
+            ) : step === "upload" ? (
               <>
                 <p className="font-body-md text-body-md text-on-surface-variant mb-6">
                   Upload a dataset to validate the new pipeline.
@@ -215,10 +277,61 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                   </div>
                 )}
               </>
+            ) : (
+              <>
+                <p className="font-body-md text-body-md text-on-surface-variant mb-6">
+                  Choose an existing dataset to generate a graph.
+                </p>
+                <div className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT p-4 mb-4">
+                  <div className="flex items-center gap-3">
+                    <Search className="w-4 h-4 text-on-surface-variant" />
+                    <input
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                      placeholder="Search datasets"
+                      className="w-full bg-transparent text-on-surface text-sm focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {isDatasetsLoading ? (
+                    <p className="text-on-surface-variant">
+                      Loading datasets...
+                    </p>
+                  ) : filteredDatasets.length === 0 ? (
+                    <p className="text-on-surface-variant">
+                      No datasets found.
+                    </p>
+                  ) : (
+                    filteredDatasets.map((dataset) => (
+                      <button
+                        key={dataset.id}
+                        onClick={() => setSelectedDataset(dataset)}
+                        className={`w-full text-left p-4 rounded-DEFAULT border transition-colors ${
+                          selectedDataset?.id === dataset.id
+                            ? "border-primary bg-primary/10"
+                            : "border-outline-variant bg-[#0F1117] hover:border-primary"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-headline-sm text-headline-sm text-on-surface">
+                              {dataset.name}
+                            </h4>
+                          </div>
+                          <span className="text-on-surface-variant text-xs">
+                            {dataset.rowCount ?? "-"} rows
+                          </span>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </>
             )}
 
             <div className="mt-8 pt-6 border-t border-outline-variant flex justify-between items-center">
-              {step === "upload" ? (
+              {step === "upload" || step === "existing" ? (
                 <button
                   onClick={() => setStep("select")}
                   className="px-4 py-2 font-label-mono text-label-mono text-on-surface-variant hover:text-on-surface transition-colors"
@@ -242,6 +355,15 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                     className="px-5 py-2 rounded-DEFAULT bg-inverse-primary hover:bg-primary-container text-white font-label-mono text-label-mono transition-colors shadow-[0_0_12px_rgba(192,193,255,0.2)] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {status === "uploading" ? "Uploading..." : "Upload"}
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+                {step === "existing" && (
+                  <button
+                    onClick={handleCreateGraph}
+                    className="px-5 py-2 rounded-DEFAULT bg-inverse-primary hover:bg-primary-container text-white font-label-mono text-label-mono transition-colors shadow-[0_0_12px_rgba(192,193,255,0.2)] flex items-center gap-2"
+                  >
+                    Create Graph
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 )}
