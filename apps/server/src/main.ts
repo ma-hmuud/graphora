@@ -29,6 +29,6 @@ export async function bootstrap(): Promise<void> {
   });
 
   const port = Number(process.env.PORT) || 3001;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`Server running on port ${port}`);
 }
