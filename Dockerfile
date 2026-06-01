@@ -24,6 +24,9 @@ COPY packages/env ./packages/env
 COPY packages/config ./packages/config
 COPY tsconfig.json ./
 
+# Generate Prisma client
+RUN pnpm --filter=@graphora/db db:generate
+
 # Build
 RUN pnpm build --filter=server
 
