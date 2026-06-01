@@ -1,11 +1,5 @@
 scalar Upload
 
-enum DatasetStatus {
-  PROCESSING
-  READY
-  FAILED
-}
-
 type Dataset {
   id: Int!
   name: String!
@@ -13,8 +7,6 @@ type Dataset {
   s3Key: String!
   sizeBytes: Int
   rowCount: Int
-  status: DatasetStatus!
-  errorMessage: String
   createdAt: String!
   updatedAt: String!
   fileUrl: String

@@ -60,4 +60,12 @@ export class GraphsResolver {
   ) {
     return this.graphs.deleteGraph(Number(session.user.id), id);
   }
+
+  @Mutation("regenerateGraph")
+  async regenerateGraph(
+    @Args("id", { type: () => Int }) id: number,
+    @Session() session: UserSession,
+  ) {
+    return this.graphs.regenerateGraph(Number(session.user.id), id);
+  }
 }

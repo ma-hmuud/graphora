@@ -12,7 +12,9 @@ import { DatasetsResolver } from "./datasets/datasets.resolver.js";
 import { DatasetsService } from "./datasets/datasets.service.js";
 import { GraphsResolver } from "./graphs/graphs.resolver.js";
 import { GraphsService } from "./graphs/graphs.service.js";
+import { GraphsController } from "./graphs/graphs.controller.js";
 import { GraphQLUpload } from "graphql-upload-minimal";
+import { GraphQLJSON } from "graphql-type-json";
 
 @Module({
   imports: [
@@ -23,11 +25,12 @@ import { GraphQLUpload } from "graphql-upload-minimal";
       definitions: {
         path: join(process.cwd(), "src/graphql.ts"),
       },
-      resolvers: { Upload: GraphQLUpload },
+      resolvers: { Upload: GraphQLUpload, JSON: GraphQLJSON },
     }),
     AuthModule.forRoot({ auth }),
     S3Module,
   ],
+  controllers: [GraphsController],
   providers: [
     AppResolver,
     AuthResolver,

@@ -12,22 +12,10 @@ enum Plan {
   PRO
 }
 
-enum DatasetStatus {
-  PROCESSING
-  READY
-  FAILED
-}
-
 enum GraphStatus {
   PROCESSING
   READY
   FAILED
-}
-
-enum Layout {
-  FORCE
-  CIRCULAR
-  HIERARCHICAL
 }
 
 model User {
@@ -99,8 +87,6 @@ model Dataset {
   s3Key        String         @map("s3_key")
   sizeBytes    Int?           @map("size_bytes")
   rowCount     Int?           @map("row_count")
-  status       DatasetStatus  @default(PROCESSING)
-  errorMessage String?        @map("error_message")
   createdAt    DateTime       @default(now()) @map("created_at")
   updatedAt    DateTime       @updatedAt @map("updated_at")
 
@@ -110,7 +96,6 @@ model Dataset {
   graphs Graph[]
 
   @@index([userId])
-  @@index([status])
   @@map("datasets")
 }
 
@@ -125,7 +110,7 @@ model Graph {
   density          Float?
   componentsCount  Int?        @map("components_count")
   shareSlug        String?     @unique @map("share_slug")
-  layoutPreference Layout      @default(FORCE) @map("layout_preference")
+  graphData        Json?       @map("graph_data")
   createdAt        DateTime    @default(now()) @map("created_at")
   updatedAt        DateTime    @updatedAt @map("updated_at")
 
@@ -135,27 +120,8 @@ model Graph {
   datasetId Int     @map("dataset_id")
   dataset   Dataset @relation(fields: [datasetId], references: [id], onDelete: Cascade)
 
-  nodeMetrics NodeMetric[]
-
   @@index([userId])
   @@index([datasetId])
   @@index([status])
   @@map("graphs")
-}
-
-model NodeMetric {
-  id          Int    @id @default(autoincrement())
-  nodeId      String @map("node_id") @db.VarChar(255)
-  degree      Float
-  betweenness Float
-  closeness   Float
-  pagerank    Float
-
-  graphId Int   @map("graph_id")
-  graph   Graph @relation(fields: [graphId], references: [id], onDelete: Cascade)
-
-  @@unique([graphId, nodeId])
-  @@index([graphId])
-  @@index([nodeId])
-  @@map("node_metrics")
 }

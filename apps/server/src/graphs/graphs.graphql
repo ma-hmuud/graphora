@@ -1,13 +1,9 @@
+scalar JSON
+
 enum GraphStatus {
   PROCESSING
   READY
   FAILED
-}
-
-enum Layout {
-  FORCE
-  CIRCULAR
-  HIERARCHICAL
 }
 
 type Graph {
@@ -21,7 +17,7 @@ type Graph {
   density: Float
   componentsCount: Int
   shareSlug: String
-  layoutPreference: Layout!
+  graphData: JSON
   createdAt: String!
   updatedAt: String!
   dataset: Dataset!
@@ -32,7 +28,6 @@ input CreateGraphInput {
   datasetId: Int!
   isDirected: Boolean
   isWeighted: Boolean
-  layoutPreference: Layout
 }
 
 input UpdateGraphInput {
@@ -40,7 +35,6 @@ input UpdateGraphInput {
   status: GraphStatus
   isDirected: Boolean
   isWeighted: Boolean
-  layoutPreference: Layout
   shareSlug: String
 }
 
@@ -51,6 +45,7 @@ extend type Query {
 
 extend type Mutation {
   createGraph(input: CreateGraphInput!): Graph!
+  regenerateGraph(id: Int!): Graph!
   updateGraph(id: Int!, input: UpdateGraphInput!): Graph!
   deleteGraph(id: Int!): Boolean!
 }

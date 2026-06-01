@@ -13,22 +13,10 @@ export enum Plan {
     PRO = "PRO"
 }
 
-export enum DatasetStatus {
-    PROCESSING = "PROCESSING",
-    READY = "READY",
-    FAILED = "FAILED"
-}
-
 export enum GraphStatus {
     PROCESSING = "PROCESSING",
     READY = "READY",
     FAILED = "FAILED"
-}
-
-export enum Layout {
-    FORCE = "FORCE",
-    CIRCULAR = "CIRCULAR",
-    HIERARCHICAL = "HIERARCHICAL"
 }
 
 export interface CreateDatasetInput {
@@ -46,7 +34,6 @@ export interface CreateGraphInput {
     datasetId: number;
     isDirected?: Nullable<boolean>;
     isWeighted?: Nullable<boolean>;
-    layoutPreference?: Nullable<Layout>;
 }
 
 export interface UpdateGraphInput {
@@ -54,7 +41,6 @@ export interface UpdateGraphInput {
     status?: Nullable<GraphStatus>;
     isDirected?: Nullable<boolean>;
     isWeighted?: Nullable<boolean>;
-    layoutPreference?: Nullable<Layout>;
     shareSlug?: Nullable<string>;
 }
 
@@ -77,8 +63,6 @@ export interface Dataset {
     s3Key: string;
     sizeBytes?: Nullable<number>;
     rowCount?: Nullable<number>;
-    status: DatasetStatus;
-    errorMessage?: Nullable<string>;
     createdAt: string;
     updatedAt: string;
     fileUrl?: Nullable<string>;
@@ -98,6 +82,7 @@ export interface IMutation {
     updateDataset(id: number, input: UpdateDatasetInput): Dataset | Promise<Dataset>;
     deleteDataset(id: number): boolean | Promise<boolean>;
     createGraph(input: CreateGraphInput): Graph | Promise<Graph>;
+    regenerateGraph(id: number): Graph | Promise<Graph>;
     updateGraph(id: number, input: UpdateGraphInput): Graph | Promise<Graph>;
     deleteGraph(id: number): boolean | Promise<boolean>;
     _empty(): Nullable<string> | Promise<Nullable<string>>;
@@ -114,11 +99,12 @@ export interface Graph {
     density?: Nullable<number>;
     componentsCount?: Nullable<number>;
     shareSlug?: Nullable<string>;
-    layoutPreference: Layout;
+    graphData?: Nullable<JSON>;
     createdAt: string;
     updatedAt: string;
     dataset: Dataset;
 }
 
 export type Upload = any;
+export type JSON = any;
 type Nullable<T> = T | null;
