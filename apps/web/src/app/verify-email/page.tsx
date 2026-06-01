@@ -18,13 +18,14 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export default function VerifyEmailPage() {
   const { data: session, isPending } = authClient.useSession();
   const [isResending, setIsResending] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const router = useRouter();
 
   // Initialize countdown from localStorage on mount
   useEffect(() => {
@@ -56,6 +57,14 @@ export default function VerifyEmailPage() {
     return () => clearInterval(timer);
   }, [countdown]);
 
+  useEffect(() => {
+    if (!isPending && !session?.user) {
+      router.push("/login");
+    } else if (!isPending && session?.user && session.user.emailVerified) {
+      router.push("/dashboard");
+    }
+  }, [session, isPending, router]);
+
   if (isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -69,12 +78,17 @@ export default function VerifyEmailPage() {
     );
   }
 
-  if (!session?.user) {
-    return redirect("/login");
-  }
-
-  if (session.user.emailVerified) {
-    return redirect("/dashboard");
+  if (!session?.user || session.user.emailVerified) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary opacity-20" />
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground animate-pulse">
+            Redirecting...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const handleResend = async () => {
@@ -109,7 +123,7 @@ export default function VerifyEmailPage() {
 
   const handleDifferentEmail = async () => {
     await authClient.signOut();
-    return redirect("/login");
+    router.push("/login");
   };
 
   console.log("VERIFY EMAIL");

@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Search, UploadCloud } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useDatasets } from "@/hooks/datasets/use-datasets";
@@ -26,6 +26,7 @@ export default function DatasetsPage() {
   const [deletingDataset, setDeletingDataset] = useState<
     { id: number; name: string } | undefined
   >(undefined);
+  const router = useRouter();
 
   const filteredDatasets = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -38,6 +39,14 @@ export default function DatasetsPage() {
     );
   }, [datasets, search]);
 
+  useEffect(() => {
+    if (!isAuthPending && !session?.user) {
+      router.push("/login");
+    } else if (!isAuthPending && session?.user && !session.user.emailVerified) {
+      router.push("/verify-email");
+    }
+  }, [session, isAuthPending, router]);
+
   if (isAuthPending) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -46,12 +55,12 @@ export default function DatasetsPage() {
     );
   }
 
-  if (!session?.user) {
-    return redirect("/login");
-  }
-
-  if (!session.user.emailVerified) {
-    return redirect("/verify-email");
+  if (!session?.user || !session.user.emailVerified) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
-import { redirect, useParams, useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
 import { useGraph } from "@/hooks/graphs/use-graph";
 import { Skeleton } from "@/components/skeleton";
@@ -45,6 +45,14 @@ export default function GraphDetailPage() {
     { ssr: false },
   );
 
+  useEffect(() => {
+    if (!isAuthPending && !session?.user) {
+      router.push("/login");
+    } else if (!isAuthPending && session?.user && !session.user.emailVerified) {
+      router.push("/verify-email");
+    }
+  }, [session, isAuthPending, router]);
+
   if (isAuthPending) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -53,12 +61,12 @@ export default function GraphDetailPage() {
     );
   }
 
-  if (!session?.user) {
-    return redirect("/login");
-  }
-
-  if (!session.user.emailVerified) {
-    return redirect("/verify-email");
+  if (!session?.user || !session.user.emailVerified) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   const handleDeleteGraph = async () => {

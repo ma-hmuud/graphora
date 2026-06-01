@@ -1,8 +1,8 @@
 "use client";
 
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   Network,
@@ -31,6 +31,7 @@ export default function GraphsPage() {
   const [deletingGraph, setDeletingGraph] = useState<
     { id: number; name: string } | undefined
   >(undefined);
+  const router = useRouter();
 
   const filteredGraphs = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -48,6 +49,14 @@ export default function GraphsPage() {
     toast("Refreshing graphs...");
   };
 
+  useEffect(() => {
+    if (!isAuthPending && !session?.user) {
+      router.push("/login");
+    } else if (!isAuthPending && session?.user && !session.user.emailVerified) {
+      router.push("/verify-email");
+    }
+  }, [session, isAuthPending, router]);
+
   if (isAuthPending) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -56,12 +65,12 @@ export default function GraphsPage() {
     );
   }
 
-  if (!session?.user) {
-    return redirect("/login");
-  }
-
-  if (!session.user.emailVerified) {
-    return redirect("/verify-email");
+  if (!session?.user || !session.user.emailVerified) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   return (

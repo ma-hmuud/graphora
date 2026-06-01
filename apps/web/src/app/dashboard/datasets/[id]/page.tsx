@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Edit, ExternalLink, Trash2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useDataset } from "@/hooks/datasets/use-dataset";
@@ -23,6 +23,14 @@ export default function DatasetDetailPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
+  useEffect(() => {
+    if (!isAuthPending && !session?.user) {
+      router.push("/login");
+    } else if (!isAuthPending && session?.user && !session.user.emailVerified) {
+      router.push("/verify-email");
+    }
+  }, [session, isAuthPending, router]);
+
   if (isAuthPending) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -31,12 +39,12 @@ export default function DatasetDetailPage() {
     );
   }
 
-  if (!session?.user) {
-    return redirect("/login");
-  }
-
-  if (!session.user.emailVerified) {
-    return redirect("/verify-email");
+  if (!session?.user || !session.user.emailVerified) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   return (

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { RecentGraphs } from "@/components/dashboard/recent-graphs";
 import { RecentDatasets } from "@/components/dashboard/recent-datasets";
@@ -15,6 +15,15 @@ export default function DashboardPage() {
   const { data: session, isPending: isAuthPending } = authClient.useSession();
   const { stats, isLoading: isDataLoading } = useDashboardData();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthPending && !session?.user) {
+      router.push("/login");
+    } else if (!isAuthPending && session?.user && !session.user.emailVerified) {
+      router.push("/verify-email");
+    }
+  }, [session, isAuthPending, router]);
 
   if (isAuthPending) {
     return (
@@ -24,12 +33,12 @@ export default function DashboardPage() {
     );
   }
 
-  if (!session?.user) {
-    return redirect("/login");
-  }
-
-  if (!session.user.emailVerified) {
-    return redirect("/verify-email");
+  if (!session?.user || !session.user.emailVerified) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   return (

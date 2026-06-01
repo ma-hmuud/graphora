@@ -1,23 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
 import { authClient } from "@/lib/auth-client";
-import { redirect } from "next/navigation";
 
 export default function LoginPage() {
   const [showSignIn, setShowSignIn] = useState(true);
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
+  const router = useRouter();
 
-  if (session?.user) {
-    return redirect("/dashboard");
-  }
-
-  if (session && !session.user.emailVerified) {
-    return redirect("/verify-email");
-  }
+  useEffect(() => {
+    if (session?.user) {
+      router.push("/dashboard");
+    } else if (session && !session.user.emailVerified) {
+      router.push("/verify-email");
+    }
+  }, [session, router]);
 
   console.log("LOGIN");
 
