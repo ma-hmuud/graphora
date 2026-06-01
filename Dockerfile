@@ -36,15 +36,31 @@ FROM oven/bun:1-slim AS production
 
 WORKDIR /app
 
-# Copy necessary files from base
-COPY --from=base /app/pnpm-lock.yaml ./
-COPY --from=base /app/package.json ./
-COPY --from=base /app/node_modules ./node_modules
-COPY --from=base /app/apps/server/dist ./apps/server/dist
-COPY --from=base /app/apps/server/package.json ./apps/server/package.json
-COPY --from=base /app/packages/auth ./packages/auth
-COPY --from=base /app/packages/db ./packages/db
-COPY --from=base /app/packages/env ./packages/env
+# Install curl for pnpm installation and openssl for Prisma
+RUN apt-get update && apt-get install -y curl openssl && rm -rf /var/lib/apt/lists/*
+
+# Install pnpm
+RUN curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=10.33.0 sh -
+ENV PATH="/root/.local/share/pnpm:$PATH"
+
+# Copy monorepo files
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/server/package.json ./apps/server/package.json
+COPY apps/server/src/prisma/schema.prisma ./apps/server/src/prisma/schema.prisma
+COPY apps/server/dist ./apps/server/dist
+COPY packages/auth/package.json ./packages/auth/package.json
+COPY packages/auth/src ./packages/auth/src
+COPY packages/db/package.json ./packages/db/package.json
+COPY packages/db/src ./packages/db/src
+COPY packages/env/package.json ./packages/env/package.json
+COPY packages/env/src ./packages/env/src
+COPY packages/config/package.json ./packages/config/package.json
+
+# Install all dependencies (for Prisma generation)
+RUN pnpm install
+
+# Generate Prisma client
+RUN pnpm --filter=@graphora/db db:generate
 
 # Expose port (matches server/src/main.ts:31)
 EXPOSE 3001
