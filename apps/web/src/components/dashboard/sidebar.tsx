@@ -93,7 +93,7 @@ export function Sidebar({ isCollapsed }: { isCollapsed: boolean }) {
           return (
             <Link
               key={link.name}
-              href={link.href}
+              href={link.href as any}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 transition-all active:translate-x-1 duration-200",
                 isActive

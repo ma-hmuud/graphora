@@ -56,7 +56,7 @@ export function AppBreadcrumb({
                 {isLast ? (
                   <BreadcrumbPage>{segment}</BreadcrumbPage>
                 ) : (
-                  <Link href={href}>{segment}</Link>
+                  <Link href={href as any}>{segment}</Link>
                 )}
               </BreadcrumbItem>
             </Fragment>

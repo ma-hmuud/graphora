@@ -43,14 +43,15 @@ export function WorkspaceGrid() {
               href={`/dashboard/graphs/${graph.id}`}
               className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4 hover:border-primary/40 transition-colors group"
             >
-              <div className="h-32 rounded bg-gradient-to-br from-primary/20 via-surface-container-high to-surface-container-low border border-outline-variant/40 mb-4 relative overflow-hidden">
+              <div className="h-32 rounded bg-linear-to-br from-primary/20 via-surface-container-high to-surface-container-low border border-outline-variant/40 mb-4 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(99,102,241,0.35),transparent_55%),radial-gradient(circle_at_80%_60%,rgba(255,255,255,0.08),transparent_50%)]" />
                 <div className="absolute inset-0 opacity-70" />
                 <div className="absolute top-3 right-3 bg-surface-container-highest/70 border border-outline-variant/40 rounded-full px-2 py-1 text-[10px] text-on-surface-variant font-label-mono flex items-center gap-1">
                   <Star className="w-3 h-3 text-primary" />
                   {graph.nodeCount
                     ? numberFormatter.format(graph.nodeCount)
-                    : "-"} nodes
+                    : "-"}{" "}
+                  nodes
                 </div>
               </div>
 
@@ -62,9 +63,12 @@ export function WorkspaceGrid() {
                   <p className="text-on-surface-variant font-label-mono text-label-mono">
                     {graph.nodeCount
                       ? numberFormatter.format(graph.nodeCount)
-                      : "-"} nodes · {graph.edgeCount
+                      : "-"}{" "}
+                    nodes ·{" "}
+                    {graph.edgeCount
                       ? numberFormatter.format(graph.edgeCount)
-                      : "-"} edges
+                      : "-"}{" "}
+                    edges
                   </p>
                   <p className="text-on-surface-variant text-xs mt-2">
                     Dataset: {graph.dataset.name}
@@ -73,15 +77,6 @@ export function WorkspaceGrid() {
                 <div className="text-on-surface-variant group-hover:text-primary transition-colors">
                   <ExternalLink className="w-4 h-4" />
                 </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2 mt-3">
-                <span className="px-2 py-1 rounded-full text-[10px] font-label-mono uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-                  {graph.status}
-                </span>
-                <span className="px-2 py-1 rounded-full text-[10px] font-label-mono uppercase tracking-wider bg-surface-container-highest text-on-surface-variant border border-outline-variant/40">
-                  {graph.layoutPreference}
-                </span>
               </div>
             </Link>
           ))

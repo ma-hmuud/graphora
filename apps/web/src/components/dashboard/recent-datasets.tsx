@@ -61,15 +61,9 @@ export function RecentDatasets() {
                   {dataset.name}
                 </h4>
                 <p className="text-on-surface-variant font-label-mono text-label-mono">
-                  {dataset.rowCount
-                    ? numberFormatter.format(dataset.rowCount)
-                    : "-"}{" "}
-                  rows
+                  {dataset.description ?? "No description"}
                 </p>
               </div>
-              <span className="text-on-surface-variant font-label-mono text-label-mono">
-                {dataset.status}
-              </span>
             </Link>
           ))}
         </div>
