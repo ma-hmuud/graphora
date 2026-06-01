@@ -43,11 +43,10 @@ RUN apt-get update && apt-get install -y curl openssl && rm -rf /var/lib/apt/lis
 RUN curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=10.33.0 sh -
 ENV PATH="/root/.local/share/pnpm:$PATH"
 
-# Copy monorepo files
+# Copy monorepo files from build context
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/server/package.json ./apps/server/package.json
 COPY apps/server/src/prisma/schema.prisma ./apps/server/src/prisma/schema.prisma
-COPY apps/server/dist ./apps/server/dist
 COPY packages/auth/package.json ./packages/auth/package.json
 COPY packages/auth/src ./packages/auth/src
 COPY packages/db/package.json ./packages/db/package.json
@@ -55,6 +54,10 @@ COPY packages/db/src ./packages/db/src
 COPY packages/env/package.json ./packages/env/package.json
 COPY packages/env/src ./packages/env/src
 COPY packages/config/package.json ./packages/config/package.json
+COPY tsconfig.json turbo.json ./
+
+# Copy dist from build stage
+COPY --from=base /app/apps/server/dist ./apps/server/dist
 
 # Install all dependencies (for Prisma generation)
 RUN pnpm install
