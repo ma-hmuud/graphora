@@ -6,7 +6,13 @@ import { sendEmail } from "./lib/mail-sender";
 
 const cors = env.CORS_ORIGIN.split(",").map((origin) => origin.trim());
 
-const isProd = env.BETTER_AUTH_URL.startsWith("https://");
+// Better Auth requires the baseURL to point exactly to the auth endpoints path
+const authBaseURL = env.BETTER_AUTH_URL.endsWith("/api/auth")
+  ? env.BETTER_AUTH_URL
+  : `${env.BETTER_AUTH_URL.replace(/\/$/, "")}/api/auth`;
+
+const isProd =
+  !authBaseURL.includes("localhost") && !authBaseURL.includes("127.0.0.1");
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -16,12 +22,8 @@ export const auth = betterAuth({
     database: {
       generateId: "serial",
     },
-    defaultCookieAttributes: {
-      sameSite: "none",
-      secure: isProd,
-      httpOnly: true,
-      path: "/",
-    },
+    // Required for Fly.io/Vercel/Cloudflare to trust HTTPS through the proxy
+    useSecureCookies: isProd,
   },
   trustedOrigins: cors,
   emailAndPassword: {
@@ -36,9 +38,11 @@ export const auth = betterAuth({
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      // Explicitly matching the Google Console URI
+      redirectURI: `${authBaseURL}/callback/google`,
       prompt: "select_account",
     },
   },
   secret: env.BETTER_AUTH_SECRET,
-  baseURL: env.BETTER_AUTH_URL,
+  baseURL: authBaseURL,
 });
