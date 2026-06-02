@@ -14,7 +14,7 @@ import {
 } from "@/lib/graphql/mutations";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { RefreshCcw, Search, Trash2, X } from "lucide-react";
+import { Bookmark, RefreshCcw, Search, Trash2, X } from "lucide-react";
 import type {
   GraphData,
   MetricKey,
@@ -400,25 +400,83 @@ function FullscreenGraph({
 }) {
   const [query, setQuery] = useState("");
   const graphRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
   const graphData = graph.graphData as GraphData | undefined;
+  const [hiddenCommunities, setHiddenCommunities] = useState<Set<number>>(
+    new Set(),
+  );
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      setSize({ width, height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const COMMUNITY_COLORS = [
+    "#3B82F6",
+    "#EF4444",
+    "#10B981",
+    "#F59E0B",
+    "#6366F1",
+    "#EC4899",
+    "#8B5CF6",
+    "#14B8A6",
+    "#F97316",
+    "#06B6D4",
+    "#84CC16",
+    "#D946EF",
+    "#F43F5E",
+    "#0EA5E9",
+    "#10B981",
+    "#EAB308",
+  ];
+
+  const getColor = (community: number = 0) => {
+    return COMMUNITY_COLORS[community % COMMUNITY_COLORS.length];
+  };
+
+  const communities = useMemo(() => {
+    if (!graphData) return [];
+    const counts: Record<number, number> = {};
+    graphData.nodes.forEach((n) => {
+      const c = n.community ?? 0;
+      counts[c] = (counts[c] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([id, count]) => ({ id: Number(id), count }))
+      .sort((a, b) => b.count - a.count);
+  }, [graphData]);
+
+  const filteredGraphData = useMemo(() => {
+    if (!graphData) return { nodes: [], links: [] };
+    const nodes = graphData.nodes
+      .filter((n) => !hiddenCommunities.has(n.community ?? 0))
+      .map((n) => ({ ...n }));
+    const nodeIds = new Set(nodes.map((n) => n.id));
+    const links = graphData.links
+      .filter((l) => nodeIds.has(l.source as string) && nodeIds.has(l.target as string))
+      .map((l) => ({ ...l }));
+    return { nodes, links };
+  }, [graphData, hiddenCommunities]);
 
   const handleSearch = () => {
     if (!graphData) return;
     const normalized = query.trim().toLowerCase();
     if (!normalized) return;
 
-    const node = graphData.nodes.find((item) =>
+    const node = filteredGraphData.nodes.find((item) =>
       item.id.toLowerCase().includes(normalized),
     );
     if (!node) return;
 
     onNodeSelect(node.id);
 
-    // Access live positions via the simulation nodes
-    const simulation = graphRef.current?.d3Force("link");
-    const liveNodes = simulation?.links?.() ?? null;
-
-    // Fallback: just use node.x/y directly — they mutate in place
     const x = (node as any).x;
     const y = (node as any).y;
 
@@ -428,110 +486,170 @@ function FullscreenGraph({
     graphRef.current?.zoom(6, 600);
   };
 
+  const toggleCommunity = (id: number) => {
+    const next = new Set(hiddenCommunities);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setHiddenCommunities(next);
+  };
+
+  const selectedNode = useMemo(() => {
+    if (!highlightNodeId || !graphData) return null;
+    return graphData.nodes.find((n) => n.id === highlightNodeId);
+  }, [highlightNodeId, graphData]);
+
   return (
-    <div className="fixed inset-0 z-100 bg-[#0B0F19]/95 backdrop-blur-sm">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant">
-        <div className="text-on-surface font-headline-sm text-headline-sm">
-          {graph.name}
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-[#0B0F19] border border-outline-variant rounded-DEFAULT px-3 py-2">
-            <Search className="w-4 h-4 text-on-surface-variant" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Find node name"
-              className="bg-transparent text-on-surface text-sm focus:outline-none w-40"
-              onKeyDown={(event) => {
-                if (event.key === "Enter") handleSearch();
-              }}
-            />
-          </div>
-          <button
-            onClick={handleSearch}
-            className="px-3 py-2 rounded-DEFAULT border border-outline-variant text-on-surface-variant text-sm"
-          >
-            Focus
-          </button>
-          <button
-            onClick={onClose}
-            className="text-on-surface-variant hover:text-primary transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-      <div className="px-6 py-3 border-b border-outline-variant flex flex-wrap items-center gap-3">
-        <select
-          value={metric}
-          onChange={(event) => onMetricChange(event.target.value as MetricKey)}
-          className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT text-sm text-on-surface px-3 py-2"
+    <div className="fixed inset-0 z-[100] bg-[#0B0F19] flex">
+      <div ref={containerRef} className="grow relative overflow-hidden">
+        <button
+          onClick={onClose}
+          className="absolute top-6 left-6 z-20 text-on-surface-variant hover:text-primary transition-colors bg-[#0B0F19]/60 p-2 rounded-full backdrop-blur-md border border-outline-variant"
         >
-          <option value="degree">Degree</option>
-          <option value="betweenness">Betweenness</option>
-          <option value="closeness">Closeness</option>
-          <option value="pagerank">PageRank</option>
-        </select>
-        <select
-          value={scale}
-          onChange={(event) =>
-            onScaleChange(event.target.value as "linear" | "log")
-          }
-          className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT text-sm text-on-surface px-3 py-2"
-        >
-          <option value="linear">Linear</option>
-          <option value="log">Log</option>
-        </select>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            min={2}
-            max={20}
-            value={minSize}
-            onChange={(event) => onMinSizeChange(Number(event.target.value))}
-            className="w-16 bg-[#0B0F19] border border-outline-variant rounded-DEFAULT text-sm text-on-surface px-2 py-2"
+          <X className="w-5 h-5" />
+        </button>
+
+        {size.width > 0 && (
+          <ForceGraph2D
+            ref={graphRef}
+            width={size.width}
+            height={size.height}
+            graphData={filteredGraphData}
+            backgroundColor="#0B0F19"
+            linkColor={() => "rgba(255, 255, 255, 0.08)"}
+            onNodeClick={(node: any) => onNodeSelect(node.id)}
+            nodeLabel={(node: any) => nodeTooltip(node)}
+            nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+              const isHighlighted = highlightNodeId && node.id === highlightNodeId;
+              const size = isHighlighted ? 6 : 4;
+              const color = isHighlighted ? "#FFFFFF" : getColor(node.community);
+              
+              ctx.beginPath();
+              ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
+              ctx.fillStyle = color;
+              ctx.fill();
+              
+              // Draw border
+              ctx.strokeStyle = "#0B0F19";
+              ctx.lineWidth = 1 / globalScale;
+              ctx.stroke();
+            }}
           />
-          <span className="text-on-surface-variant">→</span>
-          <input
-            type="number"
-            min={4}
-            max={30}
-            value={maxSize}
-            onChange={(event) => onMaxSizeChange(Number(event.target.value))}
-            className="w-16 bg-[#0B0F19] border border-outline-variant rounded-DEFAULT text-sm text-on-surface px-2 py-2"
-          />
-        </div>
-        <select
-          value={colorRamp}
-          onChange={(event) =>
-            onColorRampChange(event.target.value as "indigo" | "cyan" | "ember")
-          }
-          className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT text-sm text-on-surface px-3 py-2"
-        >
-          <option value="indigo">Indigo</option>
-          <option value="cyan">Cyan</option>
-          <option value="ember">Ember</option>
-        </select>
-        {highlightNodeId && (
-          <span className="text-on-surface-variant text-xs">
-            Focused: {highlightNodeId}
-          </span>
         )}
       </div>
-      <div className="p-6 h-[calc(100vh-64px)]">
-        <GraphCanvas
-          graph={graph}
-          ForceGraph2D={ForceGraph2D}
-          metric={metric}
-          scale={scale}
-          minSize={minSize}
-          maxSize={maxSize}
-          showTooltips={showTooltips}
-          colorRamp={colorRamp}
-          highlightNodeId={highlightNodeId}
-          graphRef={graphRef}
-        />
-      </div>
+
+      <aside className="w-[320px] flex-shrink-0 border-l border-outline-variant bg-[#0B0F19]/40 backdrop-blur-xl flex flex-col">
+        <div className="p-4 border-b border-outline-variant flex items-center justify-end">
+          <button className="flex items-center gap-2 text-xs text-on-surface-variant hover:text-on-surface">
+            <Bookmark className="w-3 h-3" />
+            All Bookmarks
+          </button>
+        </div>
+
+        <div className="p-6 space-y-8 flex-1 overflow-y-auto scrollbar-hide">
+          <div className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => event.key === "Enter" && handleSearch()}
+                placeholder="Search nodes..."
+                className="w-full bg-[#1E293B]/40 border border-outline-variant rounded-md pl-10 pr-4 py-2 text-sm text-on-surface focus:outline-none focus:border-primary/50"
+              />
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-4">
+              Node Info
+            </h4>
+            {selectedNode ? (
+              <div className="space-y-4">
+                <div>
+                  <div className="text-xs text-on-surface-variant">ID</div>
+                  <div className="text-sm font-medium text-on-surface truncate">
+                    {selectedNode.id}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(selectedNode.metrics || {}).map(
+                    ([key, val]) => (
+                      <div key={key}>
+                        <div className="text-[10px] text-on-surface-variant uppercase">
+                          {key}
+                        </div>
+                        <div className="text-sm font-mono text-on-surface">
+                          {typeof val === "number" ? val.toFixed(4) : val}
+                        </div>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-on-surface-variant italic">
+                Click a node to inspect it
+              </p>
+            )}
+          </div>
+
+          <div className="flex-1 min-h-0 flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                Communities
+              </h4>
+            </div>
+            <div className="space-y-1 overflow-y-auto pr-2 max-h-[400px]">
+              {communities.map((comm) => (
+                <div
+                  key={comm.id}
+                  className="flex items-center gap-3 group cursor-pointer py-1"
+                  onClick={() => toggleCommunity(comm.id)}
+                >
+                  <div
+                    className={`w-3 h-3 rounded-full flex items-center justify-center border transition-all ${
+                      hiddenCommunities.has(comm.id)
+                        ? "border-outline-variant bg-transparent"
+                        : "border-transparent"
+                    }`}
+                    style={{
+                      backgroundColor: hiddenCommunities.has(comm.id)
+                        ? "transparent"
+                        : getColor(comm.id),
+                    }}
+                  >
+                    {!hiddenCommunities.has(comm.id) && (
+                      <div className="w-1 h-1 bg-white rounded-full" />
+                    )}
+                  </div>
+                  <span
+                    className={`text-xs flex-1 transition-colors ${
+                      hiddenCommunities.has(comm.id)
+                        ? "text-on-surface-variant/40"
+                        : "text-on-surface-variant group-hover:text-on-surface"
+                    }`}
+                  >
+                    Community {comm.id}
+                  </span>
+                  <span className="text-[10px] font-mono text-on-surface-variant/40">
+                    {comm.count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 border-t border-outline-variant bg-[#0B0F19]/60">
+          <div className="flex items-center justify-between text-[10px] font-mono text-on-surface-variant/60 uppercase tracking-tighter">
+            <span>{graph.nodeCount} nodes</span>
+            <span>·</span>
+            <span>{graph.edgeCount} edges</span>
+            <span>·</span>
+            <span>{communities.length} communities</span>
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }

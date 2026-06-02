@@ -16,6 +16,7 @@ type GraphNode = {
   id: string;
   x?: number;
   y?: number;
+  community?: number;
   metrics?: NodeMetrics;
 };
 

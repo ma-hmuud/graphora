@@ -109,6 +109,7 @@ model Graph {
   edgeCount        Int?        @map("edge_count")
   density          Float?
   componentsCount  Int?        @map("components_count")
+  communitiesCount Int?        @map("communities_count")
   shareSlug        String?     @unique @map("share_slug")
   graphData        Json?       @map("graph_data")
   createdAt        DateTime    @default(now()) @map("created_at")

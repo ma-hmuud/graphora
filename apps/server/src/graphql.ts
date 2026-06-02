@@ -98,6 +98,7 @@ export interface Graph {
     edgeCount?: Nullable<number>;
     density?: Nullable<number>;
     componentsCount?: Nullable<number>;
+    communitiesCount?: Nullable<number>;
     shareSlug?: Nullable<string>;
     graphData?: Nullable<JSON>;
     createdAt: string;

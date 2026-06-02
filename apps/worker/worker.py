@@ -211,6 +211,17 @@ async def process_job(job, job_token):
         # 4. compute
         stats = compute_graph_stats(G)
         node_metrics = compute_node_metrics(G)
+
+        log.info("Computing communities...")
+        communities = list(
+            nx.community.louvain_communities(G.to_undirected(), weight="weight", seed=42)
+        )
+        node_to_community = {}
+        for i, comm in enumerate(communities):
+            for node in comm:
+                node_to_community[node] = i
+
+        stats["communitiesCount"] = len(communities)
         log.info("Stats: %s", stats)
 
         # 5. layout + graph data
@@ -221,6 +232,7 @@ async def process_job(job, job_token):
                     "id": str(node),
                     "x": float(pos[0]),
                     "y": float(pos[1]),
+                    "community": node_to_community.get(node, 0),
                     "metrics": {
                         "degree": node_metrics.get(node, {}).get("degree", 0.0),
                         "betweenness": node_metrics.get(node, {}).get("betweenness", 0.0),

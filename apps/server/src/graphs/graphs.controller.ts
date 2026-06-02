@@ -13,6 +13,7 @@ type WorkerPayload = {
     isWeighted?: boolean | null;
     density?: number | null;
     componentsCount?: number | null;
+    communitiesCount?: number | null;
   };
   graphData?: unknown;
 };
@@ -38,6 +39,7 @@ export class GraphsController {
       isWeighted: payload.metrics?.isWeighted ?? undefined,
       density: payload.metrics?.density ?? undefined,
       componentsCount: payload.metrics?.componentsCount ?? undefined,
+      communitiesCount: payload.metrics?.communitiesCount ?? undefined,
       graphData: payload.graphData ?? undefined,
     });
 

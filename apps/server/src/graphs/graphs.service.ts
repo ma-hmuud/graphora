@@ -13,7 +13,6 @@ interface CreateGraphInput {
   datasetId: number;
   isDirected?: boolean | null;
   isWeighted?: boolean | null;
-  layoutPreference?: "FORCE" | "CIRCULAR" | "HIERARCHICAL" | null;
 }
 
 interface UpdateGraphInput {
@@ -21,7 +20,6 @@ interface UpdateGraphInput {
   status?: "PROCESSING" | "READY" | "FAILED" | null;
   isDirected?: boolean | null;
   isWeighted?: boolean | null;
-  layoutPreference?: "FORCE" | "CIRCULAR" | "HIERARCHICAL" | null;
   shareSlug?: string | null;
 }
 
@@ -71,7 +69,6 @@ export class GraphsService {
         userId,
         isDirected: input.isDirected ?? true,
         isWeighted: input.isWeighted ?? false,
-        layoutPreference: input.layoutPreference ?? "FORCE",
       },
       include: { dataset: true },
     });
@@ -133,7 +130,6 @@ export class GraphsService {
         status: input.status ?? undefined,
         isDirected: input.isDirected ?? undefined,
         isWeighted: input.isWeighted ?? undefined,
-        layoutPreference: input.layoutPreference ?? undefined,
         shareSlug: input.shareSlug ?? undefined,
       },
       include: { dataset: true },
@@ -161,6 +157,7 @@ export class GraphsService {
     isWeighted?: boolean | null;
     density?: number | null;
     componentsCount?: number | null;
+    communitiesCount?: number | null;
     graphData?: unknown;
   }) {
     return prisma.graph.update({
@@ -174,6 +171,7 @@ export class GraphsService {
         isWeighted: input.isWeighted ?? undefined,
         density: input.density ?? undefined,
         componentsCount: input.componentsCount ?? undefined,
+        communitiesCount: input.communitiesCount ?? undefined,
         graphData: input.graphData ?? undefined,
       },
     });

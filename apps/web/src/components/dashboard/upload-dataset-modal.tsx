@@ -123,7 +123,7 @@ export function UploadDatasetModal({
                   {file ? file.name : "No file selected"}
                 </p>
                 <p className="text-xs text-on-surface-variant mt-1">
-                  Max 50MB. CSV/JSON/GML.
+                  Max 50MB. CSV.
                 </p>
               </div>
               <button

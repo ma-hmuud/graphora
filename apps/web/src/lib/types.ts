@@ -26,6 +26,7 @@ export type Graph = {
   edgeCount?: number | null;
   density?: number | null;
   componentsCount?: number | null;
+  communitiesCount?: number | null;
   shareSlug?: string | null;
   graphData?: unknown | null;
   createdAt: string;

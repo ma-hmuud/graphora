@@ -47,7 +47,7 @@ export async function createDataset(input: {
 }) {
   const operations = {
     query:
-      "mutation CreateDataset($input: CreateDatasetInput!, $file: Upload!) { createDataset(input: $input, file: $file) { id name description s3Key sizeBytes status errorMessage createdAt updatedAt fileUrl } }",
+      "mutation CreateDataset($input: CreateDatasetInput!, $file: Upload!) { createDataset(input: $input, file: $file) { id name description s3Key sizeBytes createdAt updatedAt fileUrl } }",
     variables: {
       input: { name: input.name, description: input.description },
       file: null,

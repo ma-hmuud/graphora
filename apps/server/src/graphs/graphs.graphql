@@ -16,6 +16,7 @@ type Graph {
   edgeCount: Int
   density: Float
   componentsCount: Int
+  communitiesCount: Int
   shareSlug: String
   graphData: JSON
   createdAt: String!
