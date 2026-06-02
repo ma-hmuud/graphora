@@ -70,7 +70,6 @@ export default function SignInForm({
       const { data: result, error: signInError } = await tryCatch(
         authClient.signIn.social({
           provider: "google",
-          disableRedirect: true,
           callbackURL: getCallbackURL(),
         }),
       );

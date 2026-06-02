@@ -5,9 +5,7 @@ import {
 } from "@nestjs/platform-fastify";
 import { AppModule } from "./app.module.js";
 import multipart from "@fastify/multipart";
-import cors from "@fastify/cors";
 import { processRequest } from "graphql-upload-minimal";
-import { env } from "@graphora/env/server";
 
 export async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -18,11 +16,6 @@ export async function bootstrap(): Promise<void> {
     }),
     { bodyParser: false },
   );
-
-  await app.register(cors as any, {
-    origin: env.CORS_ORIGIN.split(",").map((o) => o.trim()),
-    credentials: true,
-  });
 
   await app.register(multipart as any, {
     limits: {

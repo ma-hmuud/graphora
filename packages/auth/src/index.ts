@@ -6,6 +6,8 @@ import { sendEmail } from "./lib/mail-sender";
 
 const cors = env.CORS_ORIGIN.split(",").map((origin) => origin.trim());
 
+const isProd = env.BETTER_AUTH_URL.startsWith("https://");
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
@@ -13,6 +15,12 @@ export const auth = betterAuth({
   advanced: {
     database: {
       generateId: "serial",
+    },
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: isProd,
+      httpOnly: true,
+      path: "/",
     },
   },
   trustedOrigins: cors,
@@ -28,9 +36,9 @@ export const auth = betterAuth({
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
-      redirectURI: env.GOOGLE_REDIRECT_URI,
+      prompt: "select_account",
     },
   },
   secret: env.BETTER_AUTH_SECRET,
-  baseURL: `${env.BETTER_AUTH_URL}/api/auth`,
+  baseURL: env.BETTER_AUTH_URL,
 });
