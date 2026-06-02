@@ -14,12 +14,6 @@ export const auth = betterAuth({
     database: {
       generateId: "serial",
     },
-    defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true,
-      httpOnly: true,
-      path: "/",
-    },
   },
   trustedOrigins: cors,
   emailAndPassword: {
@@ -38,5 +32,5 @@ export const auth = betterAuth({
     },
   },
   secret: env.BETTER_AUTH_SECRET,
-  baseURL: env.BETTER_AUTH_URL,
+  baseURL: `${env.BETTER_AUTH_URL}/api/auth`,
 });
