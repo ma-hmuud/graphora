@@ -1,5 +1,7 @@
-networkx==3.3
-requests==2.32.3
-bullmq==2.2.0
-python-dotenv==1.0.1
-psycopg2-binary==2.9.9
+networkx
+requests
+bullmq
+python-dotenv
+psycopg2-binary
+numpy
+scipy
