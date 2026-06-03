@@ -15,7 +15,7 @@ import { deleteDataset } from "@/lib/datasets";
 
 export default function DatasetDetailPage() {
   const params = useParams<{ id: string }>();
-  const datasetId = Number(params.id);
+  const datasetId = params.id;
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: session, isPending: isAuthPending } = authClient.useSession();

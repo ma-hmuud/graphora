@@ -1,7 +1,7 @@
 export type GraphStatus = "PROCESSING" | "READY" | "FAILED";
 
 export type Dataset = {
-  id: number;
+  id: string;
   name: string;
   description?: string | null;
   sizeBytes?: number | null;
@@ -12,12 +12,12 @@ export type Dataset = {
 };
 
 export type GraphDataset = {
-  id: number;
+  id: string;
   name: string;
 };
 
 export type Graph = {
-  id: number;
+  id: string;
   name: string;
   status: GraphStatus;
   isDirected: boolean;

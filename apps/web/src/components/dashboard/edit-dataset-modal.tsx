@@ -10,7 +10,7 @@ type EditDatasetModalProps = {
   isOpen: boolean;
   onClose: () => void;
   dataset?: {
-    id: number;
+    id: string;
     name: string;
     description?: string | null;
   };

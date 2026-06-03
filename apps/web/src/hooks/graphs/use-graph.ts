@@ -9,7 +9,7 @@ type GraphResponse = {
   graph: Graph;
 };
 
-export function useGraph(id: number) {
+export function useGraph(id: string) {
   return useQuery({
     queryKey: ["graphs", id],
     queryFn: async () => {
@@ -20,6 +20,6 @@ export function useGraph(id: number) {
       });
       return data.graph;
     },
-    enabled: Number.isFinite(id),
+    enabled: !!id,
   });
 }

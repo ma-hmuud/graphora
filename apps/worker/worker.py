@@ -26,12 +26,23 @@ SERVER_URL = os.environ["SERVER_URL"]
 
 # ── Data Cleaning ──────────────────────────────────────────────────────────────
 
-def clean_and_parse(csv_content: str) -> tuple[list[dict], list[str]]:
+def clean_and_parse(csv_content: str, source_col: str = None, target_col: str = None) -> tuple[list[dict], list[str]]:
     """
     Returns (clean_rows, warnings).
-    Each clean row is guaranteed to have: source, target, weight (float).
     """
-    reader = csv.DictReader(io.StringIO(csv_content))
+    # Try to detect delimiter
+    delimiter = ","
+    if csv_content:
+        lines = csv_content.splitlines()
+        if lines:
+            first_line = lines[0]
+            if "\t" in first_line and "," not in first_line:
+                delimiter = "\t"
+            elif ";" in first_line and "," not in first_line:
+                delimiter = ";"
+            log.info("Detected delimiter: '%s'", delimiter)
+
+    reader = csv.DictReader(io.StringIO(csv_content), delimiter=delimiter)
     raw_headers = [h or "" for h in (reader.fieldnames or [])]
     headers = [h.strip().lstrip("\ufeff").lower() for h in raw_headers]
     warnings = []
@@ -39,70 +50,71 @@ def clean_and_parse(csv_content: str) -> tuple[list[dict], list[str]]:
     source_key = None
     target_key = None
 
-    synonyms = {
-        "source": {"source", "src", "from"},
-        "target": {"target", "dst", "to"},
-    }
+    if source_col and target_col:
+        log.info("Using user-specified columns: source='%s', target='%s'", source_col, target_col)
+        # Find exact matches in raw headers
+        for h in raw_headers:
+            if h == source_col: source_key = h
+            if h == target_col: target_key = h
+    
+    # Auto-detection if not specified or not found
+    if not source_key or not target_key:
+        synonyms = {
+            "source": {"source", "src", "from"},
+            "target": {"target", "dst", "to"},
+        }
 
-    for idx, header in enumerate(headers):
-        if header in synonyms["source"] and source_key is None:
-            source_key = raw_headers[idx]
-        if header in synonyms["target"] and target_key is None:
-            target_key = raw_headers[idx]
+        for idx, header in enumerate(headers):
+            if header in synonyms["source"] and source_key is None:
+                source_key = raw_headers[idx]
+            if header in synonyms["target"] and target_key is None:
+                target_key = raw_headers[idx]
+
+    log.info("Detected headers: %s", headers)
+    log.info("Current keys - source: '%s', target: '%s'", source_key, target_key)
 
     if not source_key or not target_key:
-        if len(raw_headers) >= 2:
-            source_key = raw_headers[0]
-            target_key = raw_headers[1]
+        # Filter out empty headers for fallback
+        non_empty_raw = [h for h in raw_headers if h.strip()]
+        if len(non_empty_raw) >= 2:
+            source_key = source_key or non_empty_raw[0]
+            target_key = target_key or non_empty_raw[1]
+            log.info("Fallback: using non-empty columns: '%s' -> '%s'", source_key, target_key)
             warnings.append(
-                "Source/target headers not found; using first two columns as source/target",
+                f"Source/target headers not found; using '{source_key}' and '{target_key}'",
             )
         else:
             raise ValueError(
-                f"CSV must have at least two columns. Got: {reader.fieldnames}"
+                f"CSV must have at least two non-empty columns. Got: {raw_headers}"
             )
 
     has_weight = "weight" in headers
     clean_rows = []
     seen_edges = set()
 
-    for i, row in enumerate(reader, start=2):  # start=2 — row 1 is header
-        # normalize keys to lowercase
-        row = {
-            (k.strip().lstrip("\ufeff").lower() if k else ""): (v.strip() if v else "")
-            for k, v in row.items()
-            if k
-        }
+    for i, row in enumerate(reader, start=2):
+        source = row.get(source_key, "").strip()
+        target = row.get(target_key, "").strip()
 
-        source = row.get(source_key.strip().lstrip("\ufeff").lower(), "")
-        target = row.get(target_key.strip().lstrip("\ufeff").lower(), "")
-
-        # drop rows with empty source or target
         if not source or not target:
+            if i <= 5:
+                log.debug("Row %d: empty value for source('%s') or target('%s')", i, source_key, target_key)
             warnings.append(f"Row {i}: empty source or target — skipped")
             continue
 
-        # drop self-loops
         if source == target:
             warnings.append(f"Row {i}: self-loop on '{source}' — skipped")
             continue
 
-        # parse weight — default to 1.0 on bad values
         weight = 1.0
         if has_weight:
-            raw_w = row.get("weight", "")
             try:
-                weight = float(raw_w)
-                if weight <= 0:
-                    warnings.append(f"Row {i}: non-positive weight '{raw_w}' — defaulting to 1.0")
-                    weight = 1.0
-            except (ValueError, TypeError):
-                warnings.append(f"Row {i}: invalid weight '{raw_w}' — defaulting to 1.0")
+                weight = float(row.get("weight", 1.0))
+            except:
+                pass
 
-        # drop duplicate edges (keep first occurrence)
         edge_key = (source, target)
         if edge_key in seen_edges:
-            warnings.append(f"Row {i}: duplicate edge ({source} → {target}) — skipped")
             continue
         seen_edges.add(edge_key)
 
@@ -136,16 +148,10 @@ def compute_graph_stats(G: nx.DiGraph) -> dict:
 
 
 def compute_node_metrics(G: nx.DiGraph) -> dict[str, dict]:
-    log.info("Computing degree centrality...")
+    log.info("Computing metrics...")
     degree = nx.degree_centrality(G)
-
-    log.info("Computing betweenness centrality...")
     betweenness = nx.betweenness_centrality(G, weight="weight")
-
-    log.info("Computing closeness centrality...")
     closeness = nx.closeness_centrality(G)
-
-    log.info("Computing PageRank...")
     pagerank = nx.pagerank(G, weight="weight")
 
     return {
@@ -162,22 +168,23 @@ def compute_node_metrics(G: nx.DiGraph) -> dict[str, dict]:
 def fetch_csv_from_url(file_url: str) -> str:
     response = requests.get(file_url, timeout=60)
     response.raise_for_status()
+    log.info("CSV snippet: %s", response.text[:100].replace("\n", "\\n"))
     return response.text
 
 
 def send_results(
-    graph_id: str,
+    graph_id: int,
     status: str,
     stats: dict | None,
     graph_data: dict | None,
     error_message: str | None = None,
 ) -> None:
     payload = {
-        "graphId": int(graph_id),
+        "graphId": graph_id,
         "status": status,
         "metrics": stats,
         "graphData": graph_data,
-        "errorMessage": error_message,
+        "errorMessage": error_message[:500] if error_message else None,
     }
     url = f"{SERVER_URL.rstrip('/')}/internal/graphs/complete"
     response = requests.post(url, json=payload, timeout=30)
@@ -189,42 +196,29 @@ def send_results(
 async def process_job(job, job_token):
     graph_id = job.data.get("graphId")
     file_url = job.data.get("fileUrl")
+    source_col = job.data.get("sourceColumn")
+    target_col = job.data.get("targetColumn")
 
     log.info("Job %s started — graph %s", job.id, graph_id)
+    log.info("Source column: %s", source_col)
+    log.info("Target column: %s", target_col)
 
     try:
-        # 1. fetch
-        log.info("Fetching CSV from URL")
         csv_content = fetch_csv_from_url(file_url)
-
-        # 2. clean
-        log.info("Cleaning CSV data...")
-        clean_rows, warnings = clean_and_parse(csv_content)
+        clean_rows, warnings = clean_and_parse(csv_content, source_col, target_col)
         log.info("Clean rows: %d | Warnings: %d", len(clean_rows), len(warnings))
 
         if not clean_rows:
-            raise ValueError("No valid edges remain after cleaning — check your CSV format.")
+            raise ValueError("No valid edges remain. Check if selected columns have data.")
 
-        # 3. build graph
         G = build_graph(clean_rows)
-
-        # 4. compute
         stats = compute_graph_stats(G)
         node_metrics = compute_node_metrics(G)
 
-        log.info("Computing communities...")
-        communities = list(
-            nx.community.louvain_communities(G.to_undirected(), weight="weight", seed=42)
-        )
-        node_to_community = {}
-        for i, comm in enumerate(communities):
-            for node in comm:
-                node_to_community[node] = i
-
+        communities = list(nx.community.louvain_communities(G.to_undirected(), weight="weight", seed=42))
+        node_to_community = {node: i for i, comm in enumerate(communities) for node in comm}
         stats["communitiesCount"] = len(communities)
-        log.info("Stats: %s", stats)
 
-        # 5. layout + graph data
         layout = nx.spring_layout(G, seed=42)
         graph_data = {
             "nodes": [
@@ -233,12 +227,7 @@ async def process_job(job, job_token):
                     "x": float(pos[0]),
                     "y": float(pos[1]),
                     "community": node_to_community.get(node, 0),
-                    "metrics": {
-                        "degree": node_metrics.get(node, {}).get("degree", 0.0),
-                        "betweenness": node_metrics.get(node, {}).get("betweenness", 0.0),
-                        "closeness": node_metrics.get(node, {}).get("closeness", 0.0),
-                        "pagerank": node_metrics.get(node, {}).get("pagerank", 0.0),
-                    },
+                    "metrics": node_metrics.get(node, {}),
                 }
                 for node, pos in layout.items()
             ],
@@ -252,11 +241,8 @@ async def process_job(job, job_token):
             ],
         }
 
-        # 6. send results to server
         send_results(graph_id, "READY", stats, graph_data)
         log.info("Job %s done ✓", job.id)
-
-        return {"nodeCount": stats["nodeCount"], "edgeCount": stats["edgeCount"]}
 
     except Exception as e:
         log.error("Job %s failed: %s", job.id, str(e))
@@ -271,15 +257,15 @@ async def process_job(job, job_token):
 # ── Entrypoint ─────────────────────────────────────────────────────────────────
 
 async def main():
-    log.info("Graphora worker starting — Redis: %s", REDIS_HOST)
+    log.info("Worker starting — Redis: %s", REDIS_HOST)
     worker = Worker("graph-analysis", process_job, {"connection": {
         "username": REDIS_USERNAME,
         "password": REDIS_PASSWORD,
         "host": REDIS_HOST,
         "port": int(REDIS_PORT),
     }})
-    log.info("Worker ready — listening for jobs...")
-    await asyncio.Event().wait()  # run forever
+    print("Worker is running...")
+    await asyncio.Event().wait()
 
 
 if __name__ == "__main__":

@@ -6,6 +6,8 @@ export const CREATE_GRAPH_MUTATION = gql`
       id
       name
       status
+      sourceColumn
+      targetColumn
       dataset {
         id
         name
@@ -24,13 +26,13 @@ export const CREATE_DATASET_MUTATION = gql`
 `;
 
 export const DELETE_GRAPH_MUTATION = gql`
-  mutation DeleteGraph($id: Int!) {
+  mutation DeleteGraph($id: ID!) {
     deleteGraph(id: $id)
   }
 `;
 
 export const REGENERATE_GRAPH_MUTATION = gql`
-  mutation RegenerateGraph($id: Int!) {
+  mutation RegenerateGraph($id: ID!) {
     regenerateGraph(id: $id) {
       id
       status

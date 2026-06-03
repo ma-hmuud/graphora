@@ -1,10 +1,18 @@
-import { Args, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
+import {
+  Args,
+  Mutation,
+  Query,
+  Resolver,
+  ResolveField,
+  Parent,
+} from "@nestjs/graphql";
 import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { ZodValidationPipe } from "../pipes/zod.pipe.js";
 import { createGraphSchema, updateGraphSchema } from "./graphs.schema.js";
 import { GraphsService } from "./graphs.service.js";
+import { decodeId, encodeId } from "../lib/hashids.js";
 
-@Resolver()
+@Resolver("Graph")
 export class GraphsResolver {
   constructor(private readonly graphs: GraphsService) {}
 
@@ -14,11 +22,13 @@ export class GraphsResolver {
   }
 
   @Query("graph")
-  async graphById(
-    @Args("id", { type: () => Int }) id: number,
-    @Session() session: UserSession,
-  ) {
-    return this.graphs.getGraph(Number(session.user.id), id);
+  async graphById(@Args("id") id: string, @Session() session: UserSession) {
+    return this.graphs.getGraph(Number(session.user.id), decodeId(id));
+  }
+
+  @ResolveField("id")
+  id(@Parent() graph: { id: number }) {
+    return encodeId(graph.id);
   }
 
   @Mutation("createGraph")
@@ -26,46 +36,50 @@ export class GraphsResolver {
     @Args("input", new ZodValidationPipe(createGraphSchema))
     input: {
       name: string;
-      datasetId: number;
+      datasetId: string;
+      sourceColumn?: string;
+      targetColumn?: string;
       isDirected?: boolean;
       isWeighted?: boolean;
-      layoutPreference?: "FORCE" | "CIRCULAR" | "HIERARCHICAL";
     },
     @Session() session: UserSession,
   ) {
-    return this.graphs.createGraph(Number(session.user.id), input);
+    return this.graphs.createGraph(Number(session.user.id), {
+      ...input,
+      datasetId: decodeId(input.datasetId),
+    });
   }
 
   @Mutation("updateGraph")
   async updateGraph(
-    @Args("id", { type: () => Int }) id: number,
+    @Args("id") id: string,
     @Args("input", new ZodValidationPipe(updateGraphSchema))
     input: {
       name?: string;
       status?: "PROCESSING" | "READY" | "FAILED";
       isDirected?: boolean;
       isWeighted?: boolean;
-      layoutPreference?: "FORCE" | "CIRCULAR" | "HIERARCHICAL";
       shareSlug?: string;
     },
     @Session() session: UserSession,
   ) {
-    return this.graphs.updateGraph(Number(session.user.id), id, input);
+    return this.graphs.updateGraph(
+      Number(session.user.id),
+      decodeId(id),
+      input,
+    );
   }
 
   @Mutation("deleteGraph")
-  async deleteGraph(
-    @Args("id", { type: () => Int }) id: number,
-    @Session() session: UserSession,
-  ) {
-    return this.graphs.deleteGraph(Number(session.user.id), id);
+  async deleteGraph(@Args("id") id: string, @Session() session: UserSession) {
+    return this.graphs.deleteGraph(Number(session.user.id), decodeId(id));
   }
 
   @Mutation("regenerateGraph")
   async regenerateGraph(
-    @Args("id", { type: () => Int }) id: number,
+    @Args("id") id: string,
     @Session() session: UserSession,
   ) {
-    return this.graphs.regenerateGraph(Number(session.user.id), id);
+    return this.graphs.regenerateGraph(Number(session.user.id), decodeId(id));
   }
 }

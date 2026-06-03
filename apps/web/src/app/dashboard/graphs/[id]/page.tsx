@@ -23,7 +23,7 @@ import { DeleteModal } from "@/components/dashboard/delete-modal";
 
 export default function GraphDetailPage() {
   const params = useParams<{ id: string }>();
-  const graphId = Number(params.id);
+  const graphId = params.id;
   const { data: session, isPending: isAuthPending } = authClient.useSession();
   const { data: graph, isLoading } = useGraph(graphId);
   const queryClient = useQueryClient();

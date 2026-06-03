@@ -16,7 +16,7 @@ export const DATASETS_QUERY = gql`
 `;
 
 export const DATASET_QUERY = gql`
-  query Dataset($id: Int!) {
+  query Dataset($id: ID!) {
     dataset(id: $id) {
       id
       name
@@ -27,6 +27,12 @@ export const DATASET_QUERY = gql`
       updatedAt
       fileUrl
     }
+  }
+`;
+
+export const DATASET_HEADERS_QUERY = gql`
+  query DatasetHeaders($id: ID!) {
+    datasetHeaders(id: $id)
   }
 `;
 
@@ -54,7 +60,7 @@ export const GRAPHS_QUERY = gql`
 `;
 
 export const GRAPH_QUERY = gql`
-  query Graph($id: Int!) {
+  query Graph($id: ID!) {
     graph(id: $id) {
       id
       name

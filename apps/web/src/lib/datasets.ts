@@ -72,13 +72,13 @@ export async function listDatasets() {
 }
 
 export async function updateDataset(input: {
-  id: number;
+  id: string;
   name?: string;
   description?: string;
 }) {
   const body = JSON.stringify({
     query:
-      "mutation UpdateDataset($id: Int!, $input: UpdateDatasetInput!) { updateDataset(id: $id, input: $input) { id name description s3Key sizeBytes status errorMessage createdAt updatedAt fileUrl } }",
+      "mutation UpdateDataset($id: ID!, $input: UpdateDatasetInput!) { updateDataset(id: $id, input: $input) { id name description s3Key sizeBytes status errorMessage createdAt updatedAt fileUrl } }",
     variables: {
       id: input.id,
       input: { name: input.name, description: input.description },
@@ -88,9 +88,9 @@ export async function updateDataset(input: {
   return requestGraphql<{ updateDataset: Dataset }>(body);
 }
 
-export async function deleteDataset(id: number) {
+export async function deleteDataset(id: string) {
   const body = JSON.stringify({
-    query: "mutation DeleteDataset($id: Int!) { deleteDataset(id: $id) }",
+    query: "mutation DeleteDataset($id: ID!) { deleteDataset(id: $id) }",
     variables: { id },
   });
 

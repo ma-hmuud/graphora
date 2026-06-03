@@ -56,4 +56,8 @@ export class S3Service {
       new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
     );
   }
+
+  getClient(): S3Client {
+    return this.client;
+  }
 }

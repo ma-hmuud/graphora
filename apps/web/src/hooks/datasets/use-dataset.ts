@@ -9,7 +9,7 @@ type DatasetResponse = {
   dataset: Dataset;
 };
 
-export function useDataset(id: number) {
+export function useDataset(id: string) {
   return useQuery({
     queryKey: ["datasets", id],
     queryFn: async () => {
@@ -20,6 +20,6 @@ export function useDataset(id: number) {
       });
       return data.dataset;
     },
-    enabled: Number.isFinite(id),
+    enabled: !!id,
   });
 }

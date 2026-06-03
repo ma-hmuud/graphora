@@ -8,11 +8,11 @@ type DeleteModalProps = {
   isOpen: boolean;
   onClose: () => void;
   t?: {
-    id: number;
+    id: string;
     name: string;
   };
   onDeleted?: () => void;
-  deleteT: (id: number) => Promise<any>;
+  deleteT: (id: string) => Promise<any>;
 };
 
 export function DeleteModal({

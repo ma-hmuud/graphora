@@ -11,6 +11,8 @@ import { DatasetsService } from "../datasets/datasets.service.js";
 interface CreateGraphInput {
   name: string;
   datasetId: number;
+  sourceColumn?: string | null;
+  targetColumn?: string | null;
   isDirected?: boolean | null;
   isWeighted?: boolean | null;
 }
@@ -18,6 +20,8 @@ interface CreateGraphInput {
 interface UpdateGraphInput {
   name?: string | null;
   status?: "PROCESSING" | "READY" | "FAILED" | null;
+  sourceColumn?: string | null;
+  targetColumn?: string | null;
   isDirected?: boolean | null;
   isWeighted?: boolean | null;
   shareSlug?: string | null;
@@ -67,6 +71,8 @@ export class GraphsService {
         name: input.name,
         datasetId: input.datasetId,
         userId,
+        sourceColumn: input.sourceColumn,
+        targetColumn: input.targetColumn,
         isDirected: input.isDirected ?? true,
         isWeighted: input.isWeighted ?? false,
       },
@@ -77,6 +83,8 @@ export class GraphsService {
     await this.graphsQueue.add("process", {
       graphId: graph.id,
       fileUrl,
+      sourceColumn: graph.sourceColumn,
+      targetColumn: graph.targetColumn,
     });
 
     return graph;
@@ -102,6 +110,8 @@ export class GraphsService {
     await this.graphsQueue.add("process", {
       graphId: graph.id,
       fileUrl,
+      sourceColumn: graph.sourceColumn,
+      targetColumn: graph.targetColumn,
     });
 
     return graph;
@@ -128,6 +138,8 @@ export class GraphsService {
       data: {
         name: input.name ?? undefined,
         status: input.status ?? undefined,
+        sourceColumn: input.sourceColumn ?? undefined,
+        targetColumn: input.targetColumn ?? undefined,
         isDirected: input.isDirected ?? undefined,
         isWeighted: input.isWeighted ?? undefined,
         shareSlug: input.shareSlug ?? undefined,
@@ -160,20 +172,25 @@ export class GraphsService {
     communitiesCount?: number | null;
     graphData?: unknown;
   }) {
-    return prisma.graph.update({
-      where: { id: input.graphId },
-      data: {
-        status: input.status,
-        errorMessage: input.errorMessage ?? undefined,
-        nodeCount: input.nodeCount ?? undefined,
-        edgeCount: input.edgeCount ?? undefined,
-        isDirected: input.isDirected ?? undefined,
-        isWeighted: input.isWeighted ?? undefined,
-        density: input.density ?? undefined,
-        componentsCount: input.componentsCount ?? undefined,
-        communitiesCount: input.communitiesCount ?? undefined,
-        graphData: input.graphData ?? undefined,
-      },
-    });
+    try {
+      return await prisma.graph.update({
+        where: { id: input.graphId },
+        data: {
+          status: input.status,
+          errorMessage: input.errorMessage ? input.errorMessage.substring(0, 499) : undefined,
+          nodeCount: input.nodeCount ?? undefined,
+          edgeCount: input.edgeCount ?? undefined,
+          isDirected: input.isDirected ?? undefined,
+          isWeighted: input.isWeighted ?? undefined,
+          density: input.density ?? undefined,
+          componentsCount: input.componentsCount ?? undefined,
+          communitiesCount: input.communitiesCount ?? undefined,
+          graphData: input.graphData ?? undefined,
+        },
+      });
+    } catch (error) {
+      console.error(`[GraphsService] Error updating graph ${input.graphId} from worker:`, error);
+      throw error;
+    }
   }
 }

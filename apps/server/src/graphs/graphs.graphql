@@ -7,9 +7,11 @@ enum GraphStatus {
 }
 
 type Graph {
-  id: Int!
+  id: ID!
   name: String!
   status: GraphStatus!
+  sourceColumn: String
+  targetColumn: String
   isDirected: Boolean!
   isWeighted: Boolean!
   nodeCount: Int
@@ -26,7 +28,9 @@ type Graph {
 
 input CreateGraphInput {
   name: String!
-  datasetId: Int!
+  datasetId: ID!
+  sourceColumn: String
+  targetColumn: String
   isDirected: Boolean
   isWeighted: Boolean
 }
@@ -41,12 +45,12 @@ input UpdateGraphInput {
 
 extend type Query {
   graphs: [Graph!]!
-  graph(id: Int!): Graph!
+  graph(id: ID!): Graph!
 }
 
 extend type Mutation {
   createGraph(input: CreateGraphInput!): Graph!
-  regenerateGraph(id: Int!): Graph!
-  updateGraph(id: Int!, input: UpdateGraphInput!): Graph!
-  deleteGraph(id: Int!): Boolean!
+  regenerateGraph(id: ID!): Graph!
+  updateGraph(id: ID!, input: UpdateGraphInput!): Graph!
+  deleteGraph(id: ID!): Boolean!
 }

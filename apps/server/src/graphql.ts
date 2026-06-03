@@ -31,7 +31,9 @@ export interface UpdateDatasetInput {
 
 export interface CreateGraphInput {
     name: string;
-    datasetId: number;
+    datasetId: string;
+    sourceColumn?: Nullable<string>;
+    targetColumn?: Nullable<string>;
     isDirected?: Nullable<boolean>;
     isWeighted?: Nullable<boolean>;
 }
@@ -45,7 +47,7 @@ export interface UpdateGraphInput {
 }
 
 export interface User {
-    id: number;
+    id: string;
     name: string;
     email: string;
     emailVerified: boolean;
@@ -57,7 +59,7 @@ export interface User {
 }
 
 export interface Dataset {
-    id: number;
+    id: string;
     name: string;
     description?: Nullable<string>;
     s3Key: string;
@@ -70,28 +72,31 @@ export interface Dataset {
 
 export interface IQuery {
     datasets(): Dataset[] | Promise<Dataset[]>;
-    dataset(id: number): Dataset | Promise<Dataset>;
+    dataset(id: string): Dataset | Promise<Dataset>;
+    datasetHeaders(id: string): string[] | Promise<string[]>;
     graphs(): Graph[] | Promise<Graph[]>;
-    graph(id: number): Graph | Promise<Graph>;
+    graph(id: string): Graph | Promise<Graph>;
     hello(name?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
     me(): Nullable<User> | Promise<Nullable<User>>;
 }
 
 export interface IMutation {
     createDataset(input: CreateDatasetInput, file: Upload): Dataset | Promise<Dataset>;
-    updateDataset(id: number, input: UpdateDatasetInput): Dataset | Promise<Dataset>;
-    deleteDataset(id: number): boolean | Promise<boolean>;
+    updateDataset(id: string, input: UpdateDatasetInput): Dataset | Promise<Dataset>;
+    deleteDataset(id: string): boolean | Promise<boolean>;
     createGraph(input: CreateGraphInput): Graph | Promise<Graph>;
-    regenerateGraph(id: number): Graph | Promise<Graph>;
-    updateGraph(id: number, input: UpdateGraphInput): Graph | Promise<Graph>;
-    deleteGraph(id: number): boolean | Promise<boolean>;
+    regenerateGraph(id: string): Graph | Promise<Graph>;
+    updateGraph(id: string, input: UpdateGraphInput): Graph | Promise<Graph>;
+    deleteGraph(id: string): boolean | Promise<boolean>;
     _empty(): Nullable<string> | Promise<Nullable<string>>;
 }
 
 export interface Graph {
-    id: number;
+    id: string;
     name: string;
     status: GraphStatus;
+    sourceColumn?: Nullable<string>;
+    targetColumn?: Nullable<string>;
     isDirected: boolean;
     isWeighted: boolean;
     nodeCount?: Nullable<number>;

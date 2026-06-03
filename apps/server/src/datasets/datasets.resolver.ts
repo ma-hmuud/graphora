@@ -1,12 +1,13 @@
-import { Args, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
+import { Args, Mutation, Query, Resolver, ResolveField, Parent } from "@nestjs/graphql";
 import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { ZodValidationPipe } from "../pipes/zod.pipe.js";
 import { createDatasetSchema, updateDatasetSchema } from "./datasets.schema.js";
 import { DatasetsService } from "./datasets.service.js";
 import { GraphQLUpload, type FileUpload } from "graphql-upload-minimal";
 import { BadRequestException } from "@nestjs/common";
+import { decodeId, encodeId } from "../lib/hashids.js";
 
-@Resolver()
+@Resolver("Dataset")
 export class DatasetsResolver {
   constructor(private readonly datasets: DatasetsService) {}
 
@@ -22,14 +23,30 @@ export class DatasetsResolver {
 
   @Query("dataset")
   async datasetById(
-    @Args("id", { type: () => Int }) id: number,
+    @Args("id") id: string,
     @Session() session: UserSession,
   ) {
     const dataset = await this.datasets.getDataset(
       Number(session.user.id),
-      id,
+      decodeId(id),
     );
     return withFileUrl(this.datasets, Number(session.user.id), dataset);
+  }
+
+  @Query("datasetHeaders")
+  async datasetHeaders(
+    @Args("id") id: string,
+    @Session() session: UserSession,
+  ) {
+    return this.datasets.getDatasetHeaders(
+      Number(session.user.id),
+      decodeId(id),
+    );
+  }
+
+  @ResolveField("id")
+  id(@Parent() dataset: { id: number }) {
+    return encodeId(dataset.id);
   }
 
   @Mutation("createDataset")
@@ -60,14 +77,14 @@ export class DatasetsResolver {
 
   @Mutation("updateDataset")
   async updateDataset(
-    @Args("id", { type: () => Int }) id: number,
+    @Args("id") id: string,
     @Args("input", new ZodValidationPipe(updateDatasetSchema))
     input: { name?: string; description?: string },
     @Session() session: UserSession,
   ) {
     const dataset = await this.datasets.updateDataset(
       Number(session.user.id),
-      id,
+      decodeId(id),
       input,
     );
     return withFileUrl(this.datasets, Number(session.user.id), dataset);
@@ -75,10 +92,10 @@ export class DatasetsResolver {
 
   @Mutation("deleteDataset")
   async deleteDataset(
-    @Args("id", { type: () => Int }) id: number,
+    @Args("id") id: string,
     @Session() session: UserSession,
   ) {
-    return this.datasets.deleteDataset(Number(session.user.id), id);
+    return this.datasets.deleteDataset(Number(session.user.id), decodeId(id));
   }
 }
 

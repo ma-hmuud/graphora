@@ -25,23 +25,38 @@ export class GraphsController {
   @AllowAnonymous()
   @Post("complete")
   async complete(@Body() payload: WorkerPayload) {
+    console.log("[GraphsController] Received worker completion payload:", {
+      graphId: payload?.graphId,
+      status: payload?.status,
+      hasMetrics: !!payload?.metrics,
+      hasGraphData: !!payload?.graphData,
+      errorMessage: payload?.errorMessage,
+    });
+
     if (!payload?.graphId || !payload?.status) {
+      console.error("[GraphsController] Missing graphId or status in payload");
       throw new BadRequestException("Missing graphId or status");
     }
 
-    await this.graphs.updateGraphFromWorker({
-      graphId: payload.graphId,
-      status: payload.status,
-      errorMessage: payload.errorMessage ?? undefined,
-      nodeCount: payload.metrics?.nodeCount ?? undefined,
-      edgeCount: payload.metrics?.edgeCount ?? undefined,
-      isDirected: payload.metrics?.isDirected ?? undefined,
-      isWeighted: payload.metrics?.isWeighted ?? undefined,
-      density: payload.metrics?.density ?? undefined,
-      componentsCount: payload.metrics?.componentsCount ?? undefined,
-      communitiesCount: payload.metrics?.communitiesCount ?? undefined,
-      graphData: payload.graphData ?? undefined,
-    });
+    try {
+      await this.graphs.updateGraphFromWorker({
+        graphId: payload.graphId,
+        status: payload.status,
+        errorMessage: payload.errorMessage ?? undefined,
+        nodeCount: payload.metrics?.nodeCount ?? undefined,
+        edgeCount: payload.metrics?.edgeCount ?? undefined,
+        isDirected: payload.metrics?.isDirected ?? undefined,
+        isWeighted: payload.metrics?.isWeighted ?? undefined,
+        density: payload.metrics?.density ?? undefined,
+        componentsCount: payload.metrics?.componentsCount ?? undefined,
+        communitiesCount: payload.metrics?.communitiesCount ?? undefined,
+        graphData: payload.graphData ?? undefined,
+      });
+      console.log(`[GraphsController] Successfully updated graph ${payload.graphId}`);
+    } catch (error) {
+      console.error(`[GraphsController] Failed to update graph ${payload.graphId}:`, error);
+      throw error;
+    }
 
     return { ok: true };
   }

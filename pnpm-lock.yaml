@@ -141,6 +141,9 @@ importers:
       graphql-upload-minimal:
         specifier: ^1.6.0
         version: 1.6.4(graphql@16.13.2)
+      hashids:
+        specifier: ^2.3.0
+        version: 2.3.0
       mercurius:
         specifier: ^16.9.0
         version: 16.9.0(graphql@16.13.2)
@@ -3619,6 +3622,9 @@ packages:
   has-symbols@1.1.0:
     resolution: {integrity: sha512-1cDNdwJ2Jaohmb3sg4OmKaMBwuC48sYni5HUw2DvsC8LjGTLK9h+eb1X6RyuOHe4hT0ULCW68iomhjUoKUqlPQ==}
     engines: {node: '>= 0.4'}
+
+  hashids@2.3.0:
+    resolution: {integrity: sha512-ljM73TE/avEhNnazxaj0Dw3BbEUuLC5yYCQ9RSkSUcT4ZSU6ZebdKCIBJ+xT/DnSYW36E9k82GH1Q6MydSIosQ==}
 
   hasown@2.0.3:
     resolution: {integrity: sha512-ej4AhfhfL2Q2zpMmLo7U1Uv9+PyhIZpgQLGT1F9miIGmiCJIoCgSmczFdrc97mWT4kVY72KA+WnnhJ5pghSvSg==}
@@ -8336,6 +8342,8 @@ snapshots:
   graphql@16.13.2: {}
 
   has-symbols@1.1.0: {}
+
+  hashids@2.3.0: {}
 
   hasown@2.0.3:
     dependencies:

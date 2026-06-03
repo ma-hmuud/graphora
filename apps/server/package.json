@@ -33,6 +33,7 @@
     "graphql": "^16.9.0",
     "graphql-type-json": "^0.3.2",
     "graphql-upload-minimal": "^1.6.0",
+    "hashids": "^2.3.0",
     "mercurius": "^16.9.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",

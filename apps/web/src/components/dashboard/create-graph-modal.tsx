@@ -1,7 +1,14 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import { X, UploadCloud, Database, ArrowRight, Search } from "lucide-react";
+import { useMemo, useRef, useState, useEffect } from "react";
+import {
+  X,
+  UploadCloud,
+  Database,
+  ArrowRight,
+  Search,
+  ChevronRight,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createDataset } from "@/lib/datasets";
 import { tryCatch } from "@/lib/try-catch";
@@ -9,6 +16,7 @@ import { toast } from "sonner";
 import { useDatasets } from "@/hooks/datasets/use-datasets";
 import { apolloClient } from "@/lib/apollo-client";
 import { CREATE_GRAPH_MUTATION } from "@/lib/graphql/mutations";
+import { DATASET_HEADERS_QUERY } from "@/lib/graphql/queries";
 import type { Dataset } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -19,12 +27,18 @@ interface CreateGraphModalProps {
 
 export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [step, setStep] = useState<"select" | "upload" | "existing">("select");
+  const [step, setStep] = useState<
+    "select" | "upload" | "existing" | "columns"
+  >("select");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [search, setSearch] = useState("");
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [sourceColumn, setSourceColumn] = useState("");
+  const [targetColumn, setTargetColumn] = useState("");
+  const [isHeadersLoading, setIsHeadersLoading] = useState(false);
   const [status, setStatus] = useState<
     "idle" | "uploading" | "success" | "error"
   >("idle");
@@ -37,6 +51,9 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
     setFile(null);
     setSearch("");
     setSelectedDataset(null);
+    setHeaders([]);
+    setSourceColumn("");
+    setTargetColumn("");
     setStatus("idle");
     setMessage("");
   };
@@ -82,13 +99,12 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
 
     const created = data?.createDataset;
     if (created) {
-      setSelectedDataset(created);
+      handleDatasetSelect(created);
     }
 
     queryClient.invalidateQueries({ queryKey: ["datasets"] });
     setStatus("success");
-    toast("Dataset uploaded. Select it to create a graph.");
-    setStep("existing");
+    toast("Dataset uploaded.");
   };
 
   const { data: datasets, isLoading: isDatasetsLoading } = useDatasets();
@@ -104,22 +120,78 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
     );
   }, [datasets, search]);
 
+  const handleDatasetSelect = async (dataset: Dataset) => {
+    setSelectedDataset(dataset);
+    setIsHeadersLoading(true);
+    setStep("columns");
+
+    const result = await tryCatch(
+      apolloClient.query({
+        query: DATASET_HEADERS_QUERY,
+        variables: { id: dataset.id },
+        fetchPolicy: "network-only",
+      }),
+    );
+
+    setIsHeadersLoading(false);
+    if (result.error) {
+      console.error(
+        "[CreateGraphModal] Failed to fetch dataset headers:",
+        result.error,
+      );
+      toast(`Failed to load dataset headers: ${result.error.message}`);
+      return;
+    }
+
+    // result.data is the ApolloQueryResult, result.data.data is the GraphQL data
+    const fetchedHeaders = result.data?.data?.datasetHeaders || [];
+    console.log("[CreateGraphModal] Fetched headers:", fetchedHeaders);
+    setHeaders(fetchedHeaders);
+
+    // Auto-select common names
+    const sourceKeys = ["source", "src", "from", "origin"];
+    const targetKeys = ["target", "dst", "to", "destination"];
+
+    const foundSource = fetchedHeaders.find((h: string) =>
+      sourceKeys.includes(h.toLowerCase()),
+    );
+    const foundTarget = fetchedHeaders.find((h: string) =>
+      targetKeys.includes(h.toLowerCase()),
+    );
+
+    if (foundSource) setSourceColumn(foundSource);
+    else if (fetchedHeaders.length > 0) setSourceColumn(fetchedHeaders[0]);
+
+    if (foundTarget) setTargetColumn(foundTarget);
+    else if (fetchedHeaders.length > 1) setTargetColumn(fetchedHeaders[1]);
+  };
+
   const handleCreateGraph = async () => {
     if (!selectedDataset) {
       toast("Select a dataset.");
       return;
     }
+    if (!sourceColumn || !targetColumn) {
+      toast("Select source and target columns.");
+      return;
+    }
+
+    const variables = {
+      input: {
+        name: `${selectedDataset.name} Graph`,
+        datasetId: selectedDataset.id,
+        sourceColumn,
+        targetColumn,
+      },
+    };
+
+    console.log("[CreateGraphModal] Creating graph with variables:", variables);
     handleClose();
 
     const { error } = await tryCatch(
       apolloClient.mutate({
         mutation: CREATE_GRAPH_MUTATION,
-        variables: {
-          input: {
-            name: `${selectedDataset.name} Graph`,
-            datasetId: selectedDataset.id,
-          },
-        },
+        variables,
       }),
     );
 
@@ -153,7 +225,9 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
           >
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-headline-md text-headline-md text-on-surface">
-                Create New Graph
+                {step === "columns"
+                  ? "Configure Projection"
+                  : "Create New Graph"}
               </h2>
               <button
                 onClick={handleClose}
@@ -277,7 +351,7 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                   </div>
                 )}
               </>
-            ) : (
+            ) : step === "existing" ? (
               <>
                 <p className="font-body-md text-body-md text-on-surface-variant mb-6">
                   Choose an existing dataset to generate a graph.
@@ -306,7 +380,7 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                     filteredDatasets.map((dataset) => (
                       <button
                         key={dataset.id}
-                        onClick={() => setSelectedDataset(dataset)}
+                        onClick={() => handleDatasetSelect(dataset)}
                         className={`w-full text-left p-4 rounded-DEFAULT border transition-colors ${
                           selectedDataset?.id === dataset.id
                             ? "border-primary bg-primary/10"
@@ -319,21 +393,73 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                               {dataset.name}
                             </h4>
                           </div>
-                          <span className="text-on-surface-variant text-xs">
-                            {dataset.rowCount ?? "-"} rows
-                          </span>
+                          <ChevronRight className="w-4 h-4 text-on-surface-variant" />
                         </div>
                       </button>
                     ))
                   )}
                 </div>
               </>
+            ) : (
+              <>
+                <p className="font-body-md text-body-md text-on-surface-variant mb-6">
+                  Define the relationships by selecting the columns to be used
+                  as nodes.
+                </p>
+                <div className="space-y-6">
+                  <div className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT p-4">
+                    <label className="block text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">
+                      Source Column (Origin Node)
+                    </label>
+                    {isHeadersLoading ? (
+                      <div className="h-10 bg-surface-container animate-pulse rounded" />
+                    ) : (
+                      <select
+                        value={sourceColumn}
+                        onChange={(e) => setSourceColumn(e.target.value)}
+                        className="w-full bg-[#1E293B] text-on-surface text-sm border border-outline-variant rounded-DEFAULT px-3 py-2 focus:outline-none focus:border-primary"
+                      >
+                        <option value="">Select column...</option>
+                        {headers.map((h) => (
+                          <option key={`src-${h}`} value={h}>
+                            {h}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  <div className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT p-4">
+                    <label className="block text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">
+                      Target Column (Destination Node)
+                    </label>
+                    {isHeadersLoading ? (
+                      <div className="h-10 bg-surface-container animate-pulse rounded" />
+                    ) : (
+                      <select
+                        value={targetColumn}
+                        onChange={(e) => setTargetColumn(e.target.value)}
+                        className="w-full bg-[#1E293B] text-on-surface text-sm border border-outline-variant rounded-DEFAULT px-3 py-2 focus:outline-none focus:border-primary"
+                      >
+                        <option value="">Select column...</option>
+                        {headers.map((h) => (
+                          <option key={`dst-${h}`} value={h}>
+                            {h}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                </div>
+              </>
             )}
 
             <div className="mt-8 pt-6 border-t border-outline-variant flex justify-between items-center">
-              {step === "upload" || step === "existing" ? (
+              {step !== "select" ? (
                 <button
-                  onClick={() => setStep("select")}
+                  onClick={() =>
+                    setStep(step === "columns" ? "existing" : "select")
+                  }
                   className="px-4 py-2 font-label-mono text-label-mono text-on-surface-variant hover:text-on-surface transition-colors"
                 >
                   Back
@@ -358,10 +484,11 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 )}
-                {step === "existing" && (
+                {step === "columns" && (
                   <button
                     onClick={handleCreateGraph}
-                    className="px-5 py-2 rounded-DEFAULT bg-inverse-primary hover:bg-primary-container text-white font-label-mono text-label-mono transition-colors shadow-[0_0_12px_rgba(192,193,255,0.2)] flex items-center gap-2"
+                    disabled={!sourceColumn || !targetColumn}
+                    className="px-5 py-2 rounded-DEFAULT bg-inverse-primary hover:bg-primary-container text-white font-label-mono text-label-mono transition-colors shadow-[0_0_12px_rgba(192,193,255,0.2)] flex items-center gap-2 disabled:opacity-50"
                   >
                     Create Graph
                     <ArrowRight className="w-4 h-4" />

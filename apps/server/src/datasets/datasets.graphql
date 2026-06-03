@@ -1,7 +1,7 @@
 scalar Upload
 
 type Dataset {
-  id: Int!
+  id: ID!
   name: String!
   description: String
   s3Key: String!
@@ -24,11 +24,12 @@ input UpdateDatasetInput {
 
 extend type Query {
   datasets: [Dataset!]!
-  dataset(id: Int!): Dataset!
+  dataset(id: ID!): Dataset!
+  datasetHeaders(id: ID!): [String!]!
 }
 
 extend type Mutation {
   createDataset(input: CreateDatasetInput!, file: Upload!): Dataset!
-  updateDataset(id: Int!, input: UpdateDatasetInput!): Dataset!
-  deleteDataset(id: Int!): Boolean!
+  updateDataset(id: ID!, input: UpdateDatasetInput!): Dataset!
+  deleteDataset(id: ID!): Boolean!
 }
