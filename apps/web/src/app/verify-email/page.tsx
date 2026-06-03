@@ -98,7 +98,7 @@ export default function VerifyEmailPage() {
     try {
       const { error } = await authClient.sendVerificationEmail({
         email: session.user.email,
-        callbackURL: window.location.origin + "/dashboard",
+        callbackURL: window.location.origin + "/",
       });
 
       if (error) {
@@ -125,8 +125,6 @@ export default function VerifyEmailPage() {
     await authClient.signOut();
     router.push("/login");
   };
-
-  console.log("VERIFY EMAIL");
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-4">

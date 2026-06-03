@@ -20,8 +20,6 @@ export default function LoginPage() {
     }
   }, [session, router]);
 
-  console.log("LOGIN");
-
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#13131b] text-foreground">
       <div className="pointer-events-none absolute inset-0">
