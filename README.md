@@ -1,112 +1,123 @@
-# graphora
+# Graphora
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Fastify, and more.
+Graphora is a powerful, full-stack graph-based data visualization and analysis platform. It allows users to upload datasets, generate complex graph structures, and explore them through an interactive web interface.
 
-## Features
+## Overview
 
-- **TypeScript** - For type safety and improved developer experience
-- **Next.js** - Full-stack React framework
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
-- **Fastify** - Fast, low-overhead web framework
-- **Bun** - Runtime environment (Server runs on Bun)
-- **Prisma** - Type-safe ORM
-- **PostgreSQL** - Database engine
-- **Authentication** - Better-Auth (with Vercel Rewrites for cross-domain stability)
-- **Turborepo** - Optimized monorepo build system
+Graphora is built as a modern monorepo designed for performance, scalability, and developer experience. It leverages a distributed architecture with a high-performance backend, a reactive frontend, and specialized workers for heavy computation.
 
-## Deployment Architecture
+## Tech Stack
 
-This project is optimized for a cross-platform deployment:
-- **Frontend**: Hosted on [Vercel](https://vercel.com) (`apps/web`).
-- **Backend**: Hosted on [Fly.io](https://fly.io) (`apps/server`).
-- **Database**: PostgreSQL (Prisma).
+### Frontend (`apps/web`)
 
-### Cross-Domain Authentication (Vercel + Fly.io)
+- **Framework**: [Next.js](https://nextjs.org/) (App Router)
+- **State Management**: [TanStack Query](https://tanstack.com/query) & [Apollo Client](https://www.apollographql.com/docs/react/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [Framer Motion](https://www.framer.com/motion/)
+- **Visualization**: [React Force Graph](https://github.com/vasturiano/react-force-graph)
+- **UI Components**: Shared primitives via `packages/ui` (based on shadcn/ui)
 
-To resolve browser issues with third-party cookies (`state_mismatch`), we use **Vercel Rewrites**. The frontend proxies all `/api/auth/*` and `/graphql` requests to the Fly.io server. This makes authentication cookies "First-Party" and extremely stable.
+### Backend (`apps/server`)
 
-**Crucial Configuration:**
-- `BETTER_AUTH_URL` on the Fly.io server MUST point to the **Vercel Frontend URL** (e.g., `https://graphora-visualizer.vercel.app`).
-- `NEXT_PUBLIC_SERVER_URL` on Vercel MUST point to the **Fly.io Server URL** (e.g., `https://graphora-server.fly.dev`).
+- **Framework**: [NestJS](https://nestjs.com/) with [Fastify](https://www.fastify.io/)
+- **API**: [GraphQL](https://graphql.org/) (via Mercurius)
+- **ORM**: [Prisma](https://www.prisma.io/)
+- **Authentication**: [Better-Auth](https://www.better-auth.com/)
+- **Storage**: [AWS S3](https://aws.amazon.com/s3/) (Object Storage)
+- **Task Queue**: [BullMQ](https://docs.bullmq.io/) (Redis-backed)
 
-## CI/CD Workflow
+### Computation Worker (`apps/worker`)
 
-The project uses path-based deployment triggers to optimize build times and costs:
+- **Runtime**: Python 3.x
+- **Graph Analysis**: [NetworkX](https://networkx.org/)
+- **Processing**: [NumPy](https://numpy.org/) & [SciPy](https://scipy.org/)
+- **Task Consumer**: [BullMQ](https://docs.bullmq.io/) (Python implementation)
 
-- **CI**: Runs on every PR/Push if any code in `apps/` or `packages/` changes.
-- **Server Deploy**: Triggers only when `apps/server/`, `packages/`, or server config files change.
-- **Web Deploy**: Managed by Vercel with an "Ignored Build Step" checking for changes in `apps/web/` or `packages/`.
+### Shared Packages (`packages/*`)
 
-## Database Setup
+- `ui`: Shared React components and global styles.
+- `auth`: Unified authentication configuration.
+- `db`: Shared Prisma schema and database clients.
+- `env`: Type-safe environment variable validation (Zod).
+- `config`: Shared ESLint, TypeScript, and Prettier configurations.
 
-This project uses PostgreSQL with Prisma ORM.
+## Key Features
 
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `.env` files with your PostgreSQL connection details.
-
-3. Sync the schema:
-
-```bash
-pnpm exec prisma db push
-```
-
-Then, run the development server:
-
-```bash
-pnpm run dev
-```
-
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
-The API is running at [http://localhost:3000](http://localhost:3000).
-
-## UI Customization
-
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
-
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
-
-### Add more shared components
-
-Run this from the project root to add more primitives to the shared UI package:
-
-```bash
-npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
-```
-
-Import shared components like this:
-
-```tsx
-import { Button } from "@graphora/ui/components/button";
-```
-
-### Add app-specific blocks
-
-If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
+- **Interactive Graph Visualization**: Explore large-scale networks with 2D force-directed layouts.
+- **Dataset Management**: Upload, edit, and version your datasets (CSV/JSON).
+- **Automated Graph Generation**: Transform raw data into structured graphs using specialized Python workers.
+- **Real-time Metrics**: View graph properties like degree distribution, centrality, and connectivity.
+- **Secure Authentication**: Robust session management and social login support.
+- **Optimized Deployment**: High-performance architecture optimized for Vercel and Fly.io.
 
 ## Project Structure
 
-```
+```text
 graphora/
 ├── apps/
-│   ├── web/         # Frontend application (Next.js)
-│   └── server/      # Backend API (Fastify)
+│   ├── web/           # Next.js Frontend
+│   ├── server/        # NestJS Backend API
+│   └── worker/        # Python Computation Worker
 ├── packages/
-│   ├── ui/          # Shared shadcn/ui components and styles
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
+│   ├── ui/            # Shared UI Library
+│   ├── auth/          # Shared Auth Logic
+│   ├── db/            # Database Schema & Client
+│   ├── env/           # Environment Validation
+│   └── config/        # Tooling Configurations
+└── infra/             # Deployment & Docker configs
 ```
 
-## Available Scripts
+## Getting Started
 
-- `pnpm run dev`: Start all applications in development mode
-- `pnpm run build`: Build all applications
-- `pnpm run dev:web`: Start only the web application
-- `pnpm run dev:server`: Start only the server
-- `pnpm run check-types`: Check TypeScript types across all apps
-- `pnpm run db:push`: Push schema changes to database
-- `pnpm run db:generate`: Generate database client/types
-- `pnpm run db:migrate`: Run database migrations
-- `pnpm run db:studio`: Open database studio UI
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (LTS) & [pnpm](https://pnpm.io/)
+- [Python 3.10+](https://www.python.org/)
+- [Docker](https://www.docker.com/) (for Redis and PostgreSQL)
+- [Bun](https://bun.sh/) (Optional, used for server runtime)
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/your-repo/graphora.git
+   cd graphora
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+3. Set up environment variables:
+   Copy `.env.example` to `.env` in the root and in respective `apps/*` directories.
+
+4. Start development environment:
+   ```bash
+   pnpm run dev
+   ```
+
+### Database Management
+
+Sync the Prisma schema with your database:
+
+```bash
+pnpm run db:push
+```
+
+## 🚢 Deployment
+
+Graphora is optimized for a hybrid deployment:
+
+- **Web**: Hosted on [Vercel](https://vercel.com).
+- **Server**: Hosted on [Fly.io](https://fly.io) or Docker.
+- **Worker**: Hosted as a separate background process or container.
+
+### Cross-Domain Auth
+
+We use **Vercel Rewrites** to proxy `/graphql` and `/api/auth` requests to the backend, ensuring first-party cookie stability and avoiding CORS issues.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
