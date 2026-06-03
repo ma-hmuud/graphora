@@ -9,31 +9,46 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **TailwindCSS** - Utility-first CSS for rapid UI development
 - **Shared UI package** - shadcn/ui primitives live in `packages/ui`
 - **Fastify** - Fast, low-overhead web framework
-- **Bun** - Runtime environment
-- **Drizzle** - TypeScript-first ORM
+- **Bun** - Runtime environment (Server runs on Bun)
+- **Prisma** - Type-safe ORM
 - **PostgreSQL** - Database engine
-- **Authentication** - Better-Auth
+- **Authentication** - Better-Auth (with Vercel Rewrites for cross-domain stability)
 - **Turborepo** - Optimized monorepo build system
 
-## Getting Started
+## Deployment Architecture
 
-First, install the dependencies:
+This project is optimized for a cross-platform deployment:
+- **Frontend**: Hosted on [Vercel](https://vercel.com) (`apps/web`).
+- **Backend**: Hosted on [Fly.io](https://fly.io) (`apps/server`).
+- **Database**: PostgreSQL (Prisma).
 
-```bash
-pnpm install
-```
+### Cross-Domain Authentication (Vercel + Fly.io)
+
+To resolve browser issues with third-party cookies (`state_mismatch`), we use **Vercel Rewrites**. The frontend proxies all `/api/auth/*` and `/graphql` requests to the Fly.io server. This makes authentication cookies "First-Party" and extremely stable.
+
+**Crucial Configuration:**
+- `BETTER_AUTH_URL` on the Fly.io server MUST point to the **Vercel Frontend URL** (e.g., `https://graphora-visualizer.vercel.app`).
+- `NEXT_PUBLIC_SERVER_URL` on Vercel MUST point to the **Fly.io Server URL** (e.g., `https://graphora-server.fly.dev`).
+
+## CI/CD Workflow
+
+The project uses path-based deployment triggers to optimize build times and costs:
+
+- **CI**: Runs on every PR/Push if any code in `apps/` or `packages/` changes.
+- **Server Deploy**: Triggers only when `apps/server/`, `packages/`, or server config files change.
+- **Web Deploy**: Managed by Vercel with an "Ignored Build Step" checking for changes in `apps/web/` or `packages/`.
 
 ## Database Setup
 
-This project uses PostgreSQL with Drizzle ORM.
+This project uses PostgreSQL with Prisma ORM.
 
 1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/server/.env` file with your PostgreSQL connection details.
+2. Update your `.env` files with your PostgreSQL connection details.
 
-3. Apply the schema to your database:
+3. Sync the schema:
 
 ```bash
-pnpm run db:push
+pnpm exec prisma db push
 ```
 
 Then, run the development server:
