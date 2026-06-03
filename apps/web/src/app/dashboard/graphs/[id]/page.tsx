@@ -14,7 +14,14 @@ import {
 } from "@/lib/graphql/mutations";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { Bookmark, RefreshCcw, Search, Trash2, X } from "lucide-react";
+import {
+  Bookmark,
+  FolderOpen,
+  RefreshCcw,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
 import type {
   GraphData,
   MetricKey,
@@ -77,6 +84,11 @@ export default function GraphDetailPage() {
     });
   };
 
+  const handleGoToDataset = async (datasetId: string) => {
+    if (!graph) return;
+    router.push(`/dashboard/datasets/${datasetId}`);
+  };
+
   const handleRegenerateGraph = async () => {
     if (!graph) return;
     try {
@@ -118,6 +130,13 @@ export default function GraphDetailPage() {
                   Dataset: {graph.dataset.name}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-3">
+                  <button
+                    onClick={() => handleGoToDataset(graph.dataset.id)}
+                    className="border border-outline-variant hover:border-primary text-primary px-4 py-2 rounded-DEFAULT font-label-mono text-label-mono flex items-center gap-2"
+                  >
+                    <FolderOpen className="w-4 h-4" />
+                    Go to dataset
+                  </button>
                   <button
                     onClick={handleRegenerateGraph}
                     className="border border-outline-variant hover:border-primary text-primary px-4 py-2 rounded-DEFAULT font-label-mono text-label-mono flex items-center gap-2"

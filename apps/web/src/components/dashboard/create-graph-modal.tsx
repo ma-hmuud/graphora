@@ -36,8 +36,11 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
   const [search, setSearch] = useState("");
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
-  const [sourceColumn, setSourceColumn] = useState("");
-  const [targetColumn, setTargetColumn] = useState("");
+  const [graphConfig, setGraphConfig] = useState({
+    name: "",
+    sourceColumn: "",
+    targetColumn: "",
+  });
   const [isHeadersLoading, setIsHeadersLoading] = useState(false);
   const [status, setStatus] = useState<
     "idle" | "uploading" | "success" | "error"
@@ -52,8 +55,11 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
     setSearch("");
     setSelectedDataset(null);
     setHeaders([]);
-    setSourceColumn("");
-    setTargetColumn("");
+    setGraphConfig({
+      name: "",
+      sourceColumn: "",
+      targetColumn: "",
+    });
     setStatus("idle");
     setMessage("");
   };
@@ -159,11 +165,15 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
       targetKeys.includes(h.toLowerCase()),
     );
 
-    if (foundSource) setSourceColumn(foundSource);
-    else if (fetchedHeaders.length > 0) setSourceColumn(fetchedHeaders[0]);
+    if (foundSource)
+      setGraphConfig((prev) => ({ ...prev, sourceColumn: foundSource }));
+    else if (fetchedHeaders.length > 0)
+      setGraphConfig((prev) => ({ ...prev, sourceColumn: fetchedHeaders[0] }));
 
-    if (foundTarget) setTargetColumn(foundTarget);
-    else if (fetchedHeaders.length > 1) setTargetColumn(fetchedHeaders[1]);
+    if (foundTarget)
+      setGraphConfig((prev) => ({ ...prev, targetColumn: foundTarget }));
+    else if (fetchedHeaders.length > 1)
+      setGraphConfig((prev) => ({ ...prev, targetColumn: fetchedHeaders[1] }));
   };
 
   const handleCreateGraph = async () => {
@@ -171,17 +181,17 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
       toast("Select a dataset.");
       return;
     }
-    if (!sourceColumn || !targetColumn) {
+    if (!graphConfig.sourceColumn || !graphConfig.targetColumn) {
       toast("Select source and target columns.");
       return;
     }
 
     const variables = {
       input: {
-        name: `${selectedDataset.name} Graph`,
+        name: graphConfig.name.trim() || `${selectedDataset.name} Graph`,
         datasetId: selectedDataset.id,
-        sourceColumn,
-        targetColumn,
+        sourceColumn: graphConfig.sourceColumn,
+        targetColumn: graphConfig.targetColumn,
       },
     };
 
@@ -257,7 +267,7 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                         Upload new dataset
                       </h3>
                       <p className="font-label-mono text-label-mono text-on-surface-variant mt-1">
-                        CSV, JSON, GML supported
+                        CSV supported
                       </p>
                     </div>
                   </button>
@@ -409,14 +419,35 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                 <div className="space-y-6">
                   <div className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT p-4">
                     <label className="block text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">
+                      Graph Name
+                    </label>
+                    <input
+                      value={graphConfig.name}
+                      onChange={(e) =>
+                        setGraphConfig((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
+                      className="w-full bg-transparent text-on-surface text-sm border border-outline-variant rounded-DEFAULT px-3 py-2 focus:outline-none focus:border-primary"
+                      placeholder={`${selectedDataset?.name} Graph`}
+                    />
+                  </div>
+                  <div className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT p-4">
+                    <label className="block text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">
                       Source Column (Origin Node)
                     </label>
                     {isHeadersLoading ? (
                       <div className="h-10 bg-surface-container animate-pulse rounded" />
                     ) : (
                       <select
-                        value={sourceColumn}
-                        onChange={(e) => setSourceColumn(e.target.value)}
+                        value={graphConfig.sourceColumn}
+                        onChange={(e) =>
+                          setGraphConfig((prev) => ({
+                            ...prev,
+                            sourceColumn: e.target.value,
+                          }))
+                        }
                         className="w-full bg-[#1E293B] text-on-surface text-sm border border-outline-variant rounded-DEFAULT px-3 py-2 focus:outline-none focus:border-primary"
                       >
                         <option value="">Select column...</option>
@@ -437,8 +468,13 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                       <div className="h-10 bg-surface-container animate-pulse rounded" />
                     ) : (
                       <select
-                        value={targetColumn}
-                        onChange={(e) => setTargetColumn(e.target.value)}
+                        value={graphConfig.targetColumn}
+                        onChange={(e) =>
+                          setGraphConfig((prev) => ({
+                            ...prev,
+                            targetColumn: e.target.value,
+                          }))
+                        }
                         className="w-full bg-[#1E293B] text-on-surface text-sm border border-outline-variant rounded-DEFAULT px-3 py-2 focus:outline-none focus:border-primary"
                       >
                         <option value="">Select column...</option>
@@ -487,7 +523,9 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                 {step === "columns" && (
                   <button
                     onClick={handleCreateGraph}
-                    disabled={!sourceColumn || !targetColumn}
+                    disabled={
+                      !graphConfig.sourceColumn || !graphConfig.targetColumn
+                    }
                     className="px-5 py-2 rounded-DEFAULT bg-inverse-primary hover:bg-primary-container text-white font-label-mono text-label-mono transition-colors shadow-[0_0_12px_rgba(192,193,255,0.2)] flex items-center gap-2 disabled:opacity-50"
                   >
                     Create Graph
