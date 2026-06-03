@@ -42,6 +42,8 @@ export const GRAPHS_QUERY = gql`
       id
       name
       status
+      sourceColumn
+      targetColumn
       isDirected
       isWeighted
       nodeCount

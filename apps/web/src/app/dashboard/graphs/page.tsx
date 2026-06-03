@@ -178,6 +178,22 @@ export default function GraphsPage() {
                             {graph.edgeCount ?? "-"}
                           </p>
                         </div>
+                        <div className="bg-[#0B0F19] border border-outline-variant/40 rounded-DEFAULT p-3">
+                          <p className="text-xs text-on-surface-variant">
+                            Source Column
+                          </p>
+                          <p className="text-on-surface font-label-mono text-label-mono">
+                            {graph.sourceColumn ?? "-"}
+                          </p>
+                        </div>
+                        <div className="bg-[#0B0F19] border border-outline-variant/40 rounded-DEFAULT p-3">
+                          <p className="text-xs text-on-surface-variant">
+                            Target Column
+                          </p>
+                          <p className="text-on-surface font-label-mono text-label-mono">
+                            {graph.targetColumn ?? "-"}
+                          </p>
+                        </div>
                       </div>
                       <div className="mt-4 flex items-center justify-between text-xs text-on-surface-variant">
                         <span>{formatDate(graph.updatedAt)}</span>
