@@ -21,10 +21,10 @@ export default function DatasetsPage() {
   const [search, setSearch] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [editingDataset, setEditingDataset] = useState<
-    { id: number; name: string; description?: string | null } | undefined
+    { id: string; name: string; description?: string | null } | undefined
   >(undefined);
   const [deletingDataset, setDeletingDataset] = useState<
-    { id: number; name: string } | undefined
+    { id: string; name: string } | undefined
   >(undefined);
   const router = useRouter();
 

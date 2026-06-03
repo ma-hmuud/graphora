@@ -29,7 +29,7 @@ export default function GraphsPage() {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deletingGraph, setDeletingGraph] = useState<
-    { id: number; name: string } | undefined
+    { id: string; name: string } | undefined
   >(undefined);
   const router = useRouter();
 
@@ -208,7 +208,7 @@ export default function GraphsPage() {
           onDeleted={() => {
             queryClient.invalidateQueries({ queryKey: ["graphs"] });
           }}
-          deleteT={async (id: number) => {
+          deleteT={async (id: string) => {
             try {
               await apolloClient.mutate({
                 mutation: DELETE_GRAPH_MUTATION,
