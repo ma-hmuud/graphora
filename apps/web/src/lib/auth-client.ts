@@ -1,12 +1,13 @@
-import { env } from "@graphora/env/web";
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-  // Point exactly to the auth endpoints on your server
-  baseURL: `${env.NEXT_PUBLIC_SERVER_URL.replace(/\/$/, "")}/api/auth`,
+  // Use current origin to leverage Vercel rewrites (/api/auth -> Fly.io)
+  // This makes auth cookies First-Party and fixes state_mismatch
+  baseURL: typeof window !== "undefined" ? window.location.origin : undefined,
   fetchOptions: {
     credentials: "include",
   },
-  // Required for cross-domain auth (vercel.app vs fly.dev)
+  // Required for cross-domain auth if not using same domain, 
+  // but with rewrites we are effectively on the same domain.
   disableCookieCache: true,
 });

@@ -19,6 +19,7 @@ export const auth = betterAuth({
   }),
 
   // Mandatory for different domains (vercel.app vs fly.dev)
+  // Even with rewrites, we want secure cookies in production
   useSecureCookies: isProd,
 
   advanced: {
@@ -27,9 +28,8 @@ export const auth = betterAuth({
     },
     // Required for Fly.io and other reverse proxies
     proxy: true,
-    // crossSubdomain: true should NOT be used for different TLDs (vercel.app vs fly.dev)
     defaultCookieAttributes: isProd ? {
-      sameSite: "none",
+      sameSite: "lax", // 'lax' is sufficient with rewrites because it's now First-Party
       secure: true,
       httpOnly: true,
       path: "/",
@@ -37,7 +37,10 @@ export const auth = betterAuth({
   },
 
   // Explicitly trust your frontend URL
-  trustedOrigins: cors,
+  trustedOrigins: [
+    ...cors,
+    "https://graphora-visualizer.vercel.app"
+  ],
 
   emailAndPassword: {
     enabled: true,
