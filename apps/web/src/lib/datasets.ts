@@ -11,7 +11,7 @@ type GraphQLResponse<T> = {
 };
 
 function getGraphqlUrl() {
-  return `${env.NEXT_PUBLIC_SERVER_URL}/graphql`;
+  return "/graphql";
 }
 
 async function requestGraphql<T>(

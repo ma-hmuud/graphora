@@ -4,7 +4,9 @@ import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
 import { env } from "@graphora/env/web";
 
 const httpLink = createHttpLink({
-  uri: `${env.NEXT_PUBLIC_SERVER_URL}/graphql`,
+  // Use relative path to leverage Vercel rewrites
+  // This ensures the browser sends the session cookies set on the Vercel domain
+  uri: "/graphql",
   credentials: "include",
 });
 
