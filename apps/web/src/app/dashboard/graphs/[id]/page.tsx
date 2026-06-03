@@ -185,6 +185,58 @@ export default function GraphDetailPage() {
                       {graph.componentsCount ?? "-"}
                     </p>
                   </div>
+                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
+                    <p className="text-on-surface-variant text-xs">
+                      Communities
+                    </p>
+                    <p className="text-on-surface font-label-mono text-label-mono">
+                      {graph.communitiesCount ?? "-"}
+                    </p>
+                  </div>
+                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
+                    <p className="text-on-surface-variant text-xs">Directed</p>
+                    <p className="text-on-surface font-label-mono text-label-mono">
+                      {graph.isDirected ? "Yes" : "No"}
+                    </p>
+                  </div>
+                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
+                    <p className="text-on-surface-variant text-xs">Weighted</p>
+                    <p className="text-on-surface font-label-mono text-label-mono">
+                      {graph.isWeighted ? "Yes" : "No"}
+                    </p>
+                  </div>
+                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
+                    <p className="text-on-surface-variant text-xs">
+                      Components
+                    </p>
+                    <p className="text-on-surface font-label-mono text-label-mono">
+                      {graph.componentsCount ?? "-"}
+                    </p>
+                  </div>
+                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
+                    <p className="text-on-surface-variant text-xs">
+                      Error message
+                    </p>
+                    <p className="text-on-surface font-label-mono text-label-mono">
+                      {graph.errorMessage ?? "-"}
+                    </p>
+                  </div>
+                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
+                    <p className="text-on-surface-variant text-xs">
+                      Source column
+                    </p>
+                    <p className="text-on-surface font-label-mono text-label-mono">
+                      {graph.sourceColumn ?? "-"}
+                    </p>
+                  </div>
+                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
+                    <p className="text-on-surface-variant text-xs">
+                      Target column
+                    </p>
+                    <p className="text-on-surface font-label-mono text-label-mono">
+                      {graph.targetColumn ?? "-"}
+                    </p>
+                  </div>
                 </div>
                 <NodeHoverHint />
               </section>
@@ -460,7 +512,10 @@ function FullscreenGraph({
       .map((n) => ({ ...n }));
     const nodeIds = new Set(nodes.map((n) => n.id));
     const links = graphData.links
-      .filter((l) => nodeIds.has(l.source as string) && nodeIds.has(l.target as string))
+      .filter(
+        (l) =>
+          nodeIds.has(l.source as string) && nodeIds.has(l.target as string),
+      )
       .map((l) => ({ ...l }));
     return { nodes, links };
   }, [graphData, hiddenCommunities]);
@@ -499,7 +554,7 @@ function FullscreenGraph({
   }, [highlightNodeId, graphData]);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-[#0B0F19] flex">
+    <div className="fixed inset-0 z-100 bg-[#0B0F19] flex">
       <div ref={containerRef} className="grow relative overflow-hidden">
         <button
           onClick={onClose}
@@ -518,16 +573,23 @@ function FullscreenGraph({
             linkColor={() => "rgba(255, 255, 255, 0.08)"}
             onNodeClick={(node: any) => onNodeSelect(node.id)}
             nodeLabel={(node: any) => nodeTooltip(node)}
-            nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
-              const isHighlighted = highlightNodeId && node.id === highlightNodeId;
+            nodeCanvasObject={(
+              node: any,
+              ctx: CanvasRenderingContext2D,
+              globalScale: number,
+            ) => {
+              const isHighlighted =
+                highlightNodeId && node.id === highlightNodeId;
               const size = isHighlighted ? 6 : 4;
-              const color = isHighlighted ? "#FFFFFF" : getColor(node.community);
-              
+              const color = isHighlighted
+                ? "#FFFFFF"
+                : getColor(node.community);
+
               ctx.beginPath();
               ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
               ctx.fillStyle = color;
               ctx.fill();
-              
+
               // Draw border
               ctx.strokeStyle = "#0B0F19";
               ctx.lineWidth = 1 / globalScale;
@@ -537,7 +599,7 @@ function FullscreenGraph({
         )}
       </div>
 
-      <aside className="w-[320px] flex-shrink-0 border-l border-outline-variant bg-[#0B0F19]/40 backdrop-blur-xl flex flex-col">
+      <aside className="w-[320px] shrink-0 border-l border-outline-variant bg-[#0B0F19]/40 backdrop-blur-xl flex flex-col">
         <div className="p-4 border-b border-outline-variant flex items-center justify-end">
           <button className="flex items-center gap-2 text-xs text-on-surface-variant hover:text-on-surface">
             <Bookmark className="w-3 h-3" />

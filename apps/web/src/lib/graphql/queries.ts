@@ -65,12 +65,15 @@ export const GRAPH_QUERY = gql`
       id
       name
       status
+      sourceColumn
+      targetColumn
       isDirected
       isWeighted
       nodeCount
       edgeCount
       density
       componentsCount
+      errorMessage
       shareSlug
       graphData
       createdAt

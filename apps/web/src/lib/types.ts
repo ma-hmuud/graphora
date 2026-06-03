@@ -20,6 +20,9 @@ export type Graph = {
   id: string;
   name: string;
   status: GraphStatus;
+  sourceColumn?: string | null;
+  targetColumn?: string | null;
+  errorMessage?: string | null;
   isDirected: boolean;
   isWeighted: boolean;
   nodeCount?: number | null;

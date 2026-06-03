@@ -105,6 +105,7 @@ export interface Graph {
     componentsCount?: Nullable<number>;
     communitiesCount?: Nullable<number>;
     shareSlug?: Nullable<string>;
+    errorMessage?: Nullable<string>;
     graphData?: Nullable<JSON>;
     createdAt: string;
     updatedAt: string;
