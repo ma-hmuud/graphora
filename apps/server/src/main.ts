@@ -17,6 +17,11 @@ export async function bootstrap(): Promise<void> {
     { bodyParser: false },
   );
 
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN?.split(",") || [],
+    credentials: true,
+  });
+
   await app.register(multipart as any, {
     limits: {
       fileSize: 50 * 1024 * 1024, // 50 MB,
