@@ -3,8 +3,19 @@ name: CI
 on:
   push:
     branches: [main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/ci.yaml'
   pull_request:
     branches: [main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,18 +26,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      # @graphora/env (server) — required when packages load server env during tooling
       DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
       BETTER_AUTH_SECRET: "00000000000000000000000000000000"
       BETTER_AUTH_URL: http://127.0.0.1:3000
       CORS_ORIGIN: http://127.0.0.1:3001
       NODE_ENV: production
-      # @graphora/env (web) — Next.js build
       NEXT_PUBLIC_SERVER_URL: http://127.0.0.1:3000
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
