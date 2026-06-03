@@ -5,6 +5,7 @@ import {
 } from "@nestjs/platform-fastify";
 import { AppModule } from "./app.module.js";
 import multipart from "@fastify/multipart";
+import cookie from "@fastify/cookie";
 import { processRequest } from "graphql-upload-minimal";
 
 export async function bootstrap(): Promise<void> {
@@ -16,6 +17,8 @@ export async function bootstrap(): Promise<void> {
     }),
     { bodyParser: false },
   );
+
+  await app.register(cookie as any);
 
   app.enableCors({
     origin: process.env.CORS_ORIGIN?.split(",") || [],

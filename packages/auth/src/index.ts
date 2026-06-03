@@ -11,9 +11,7 @@ const authBaseURL = env.BETTER_AUTH_URL.endsWith("/api/auth")
   ? env.BETTER_AUTH_URL
   : `${env.BETTER_AUTH_URL.replace(/\/$/, "")}/api/auth`;
 
-const isProd =
-  env.NODE_ENV === "production" ||
-  (!authBaseURL.includes("localhost") && !authBaseURL.includes("127.0.0.1"));
+const isProd = env.NODE_ENV === "production" || (!authBaseURL.includes("localhost") && !authBaseURL.includes("127.0.0.1"));
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -29,16 +27,13 @@ export const auth = betterAuth({
     },
     // Required for Fly.io and other reverse proxies
     proxy: true,
-    // Helps with cross-domain cookie issues
-    crossSubdomain: true,
-    defaultCookieAttributes: isProd
-      ? {
-          sameSite: "none",
-          secure: true,
-          httpOnly: true,
-          path: "/",
-        }
-      : undefined,
+    // crossSubdomain: true should NOT be used for different TLDs (vercel.app vs fly.dev)
+    defaultCookieAttributes: isProd ? {
+      sameSite: "none",
+      secure: true,
+      httpOnly: true,
+      path: "/",
+    } : undefined,
   },
 
   // Explicitly trust your frontend URL
