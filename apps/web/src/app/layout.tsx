@@ -15,8 +15,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "graphora",
-  description: "graphora",
+  title: "Graphora",
+  description: "Graphora is a powerful graph-based data visualization and analysis platform, designed for exploring complex datasets through interactive graphs.",
 };
 
 export default function RootLayout({

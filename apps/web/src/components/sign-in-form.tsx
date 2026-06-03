@@ -28,9 +28,9 @@ export default function SignInForm({
   const { isPending } = authClient.useSession();
   const getCallbackURL = () => {
     if (typeof window !== "undefined") {
-      return `${window.location.origin}/`;
+      return `${window.location.origin}/dashboard`;
     }
-    return "/";
+    return "/dashboard";
   };
 
   const signInMutation = useMutation({
@@ -56,7 +56,7 @@ export default function SignInForm({
       }
 
       toast.success("Sign in successful");
-      router.push("/");
+      router.push("/dashboard");
     },
     onError: () => {
       toast.error(

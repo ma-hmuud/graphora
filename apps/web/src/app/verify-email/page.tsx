@@ -98,7 +98,7 @@ export default function VerifyEmailPage() {
     try {
       const { error } = await authClient.sendVerificationEmail({
         email: session.user.email,
-        callbackURL: window.location.origin + "/",
+        callbackURL: window.location.origin + "/dashboard",
       });
 
       if (error) {

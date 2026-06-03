@@ -25,7 +25,7 @@ export default function SignUpForm({
 }) {
   const router = useRouter();
   const { isPending } = authClient.useSession();
-  const callbackURL = "/";
+  const callbackURL = "/dashboard";
 
   const signUpMutation = useMutation({
     mutationFn: async (value: {
