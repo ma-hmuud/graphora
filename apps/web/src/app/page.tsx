@@ -29,57 +29,14 @@ export default async function Home() {
             </span>
             Graphora
           </a>
-          <div className="hidden md:flex gap-6 items-center">
-            <a
-              className="text-on-surface-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors"
-              href="#features"
-            >
-              Features
-            </a>
-            <a
-              className="text-on-surface-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors"
-              href="#how-it-works"
-            >
-              How it works
-            </a>
-            <a
-              className="text-on-surface-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors"
-              href="#pricing"
-            >
-              Pricing
-            </a>
-            <a
-              className="text-on-surface-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors"
-              href="#compare"
-            >
-              Compare
-            </a>
-          </div>
         </div>
         <div className="flex items-center gap-4">
-          {isSignedIn ? (
-            <Link
-              className="bg-primary hover:bg-primary-fixed text-on-primary px-4 py-2 rounded font-medium transition-colors active:scale-95 duration-200"
-              href="/dashboard"
-            >
-              Dashboard
-            </Link>
-          ) : (
-            <>
-              <a
-                className="hidden md:block text-on-surface-variant font-medium hover:text-primary transition-colors"
-                href="/login"
-              >
-                Sign In
-              </a>
-              <a
-                className="bg-primary hover:bg-primary-fixed text-on-primary px-4 py-2 rounded font-medium transition-colors active:scale-95 duration-200"
-                href="/login"
-              >
-                Get Started
-              </a>
-            </>
-          )}
+          <Link
+            className="bg-primary hover:bg-primary-fixed text-on-primary px-4 py-2 rounded font-medium transition-colors active:scale-95 duration-200"
+            href={isSignedIn ? "/dashboard" : "/login"}
+          >
+            {isSignedIn ? "Dashboard" : "Sign In"}
+          </Link>
         </div>
       </nav>
       <main>
@@ -107,21 +64,12 @@ export default async function Home() {
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <a
                 className="bg-primary hover:bg-primary-fixed text-on-primary px-6 py-3 rounded font-medium transition-all hover:shadow-[0_0_20px_rgba(192,193,255,0.4)] flex items-center justify-center gap-2"
-                href="/login"
+                href={isSignedIn ? "/dashboard" : "/login"}
               >
-                Get started free
+                {isSignedIn ? "Go to Dashboard" : "Get started free"}
                 <span className="material-symbols-outlined text-[20px]">
                   arrow_forward
                 </span>
-              </a>
-              <a
-                className="border border-outline-variant hover:border-primary text-primary px-6 py-3 rounded font-medium transition-colors flex items-center justify-center gap-2 bg-surface/50 backdrop-blur-sm"
-                href="#"
-              >
-                <span className="material-symbols-outlined text-[20px]">
-                  play_circle
-                </span>
-                See a demo
               </a>
             </div>
           </div>

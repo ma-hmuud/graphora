@@ -6,25 +6,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@graphora/ui/components/card";
-import { Input } from "@graphora/ui/components/input";
-import { Label } from "@graphora/ui/components/label";
-import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
 
 import Loader from "./loader";
 import { tryCatch } from "@/lib/try-catch";
 
-export default function SignInForm({
-  onSwitchToSignUp,
-}: {
-  onSwitchToSignUp: () => void;
-}) {
-  const router = useRouter();
+export default function SignInForm() {
   const { isPending } = authClient.useSession();
   const getCallbackURL = () => {
     if (typeof window !== "undefined") {
@@ -32,38 +22,6 @@ export default function SignInForm({
     }
     return "/dashboard";
   };
-
-  const signInMutation = useMutation({
-    mutationFn: async (value: { email: string; password: string }) => {
-      const { data: result, error: signInError } = await tryCatch(
-        authClient.signIn.email({
-          email: value.email,
-          password: value.password,
-          callbackURL: getCallbackURL(),
-        }),
-      );
-
-      if (signInError) {
-        throw signInError;
-      }
-
-      return result.data;
-    },
-    onSuccess: (data) => {
-      if (data?.redirect && data?.url) {
-        window.location.assign(data.url);
-        return;
-      }
-
-      toast.success("Sign in successful");
-      router.push("/dashboard");
-    },
-    onError: () => {
-      toast.error(
-        "Sign in failed. Please check your credentials and try again.",
-      );
-    },
-  });
 
   const googleMutation = useMutation({
     mutationFn: async () => {
@@ -93,141 +51,35 @@ export default function SignInForm({
     },
   });
 
-  const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    onSubmit: async ({ value }) => {
-      await signInMutation.mutateAsync({
-        email: value.email,
-        password: value.password,
-      });
-    },
-    validators: {
-      onSubmit: z.object({
-        email: z.email("Invalid email address"),
-        password: z.string().min(8, "Password must be at least 8 characters"),
-      }),
-    },
-  });
-
   if (isPending) {
     return <Loader />;
   }
 
   return (
-    <Card className="w-full max-w-md border border-foreground/10 bg-background/70 shadow-[0_30px_80px_-60px_rgba(14,165,233,0.8)] backdrop-blur">
-      <CardHeader className="space-y-2">
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>
-          Use your email and password or continue with Google.
+    <Card className="relative w-full max-w-md overflow-hidden border border-white/10 bg-black/40 p-2 shadow-[0_0_50px_-12px_rgba(56,189,248,0.3)] backdrop-blur-xl">
+      <div className="absolute -left-16 -top-16 h-32 w-32 rounded-full bg-sky-500/10 blur-2xl" />
+      <div className="absolute -bottom-16 -right-16 h-32 w-32 rounded-full bg-indigo-500/10 blur-2xl" />
+      
+      <CardHeader className="relative z-10 space-y-2 text-center pb-8 pt-6">
+        <CardTitle className="bg-gradient-to-r from-sky-400 via-indigo-200 to-white bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+          Welcome back
+        </CardTitle>
+        <CardDescription className="text-muted-foreground/80">
+          Sign in to your account using Google to continue
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      
+      <CardContent className="relative z-10 pb-6">
         <Button
           type="button"
-          variant="outline"
-          className="w-full justify-center gap-2 border-foreground/20 bg-transparent text-foreground hover:bg-foreground/5"
+          className="relative w-full justify-center gap-3 overflow-hidden border border-white/15 bg-white/5 py-6 text-base font-medium text-white transition-all duration-300 hover:border-sky-500/40 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] active:scale-[0.98]"
           onClick={() => googleMutation.mutate()}
           disabled={googleMutation.isPending}
         >
           <GoogleIcon />
           {googleMutation.isPending ? "Connecting..." : "Continue with Google"}
         </Button>
-
-        <div className="relative">
-          <div className="h-px w-full bg-foreground/10" />
-          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-3 text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
-            Or
-          </span>
-        </div>
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
-          className="space-y-4"
-        >
-          <div>
-            <form.Field name="email">
-              {(field) => (
-                <div className="space-y-2">
-                  <Label htmlFor={field.name}>Email</Label>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="email"
-                    autoComplete="email"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                  {field.state.meta.errors.map((error) => (
-                    <p key={error?.message} className="text-red-500">
-                      {error?.message}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </form.Field>
-          </div>
-
-          <div>
-            <form.Field name="password">
-              {(field) => (
-                <div className="space-y-2">
-                  <Label htmlFor={field.name}>Password</Label>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="password"
-                    autoComplete="current-password"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                  {field.state.meta.errors.map((error) => (
-                    <p key={error?.message} className="text-red-500">
-                      {error?.message}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </form.Field>
-          </div>
-
-          <form.Subscribe
-            selector={(state) => ({
-              canSubmit: state.canSubmit,
-              isSubmitting: state.isSubmitting,
-            })}
-          >
-            {({ canSubmit, isSubmitting }) => (
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={
-                  !canSubmit || isSubmitting || signInMutation.isPending
-                }
-              >
-                {isSubmitting || signInMutation.isPending
-                  ? "Signing in..."
-                  : "Sign In"}
-              </Button>
-            )}
-          </form.Subscribe>
-        </form>
       </CardContent>
-
-      <div className="flex items-center justify-between border-t border-foreground/10 px-4 py-3 text-xs text-muted-foreground">
-        <span>New here?</span>
-        <Button variant="link" onClick={onSwitchToSignUp} className="p-0">
-          Create an account
-        </Button>
-      </div>
     </Card>
   );
 }
@@ -255,7 +107,7 @@ function getAuthErrorMessage(error: unknown) {
 
 function GoogleIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none">
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none">
       <path
         d="M22.5 12.3c0-.8-.07-1.37-.23-1.98H12v3.76h6.03c-.12.96-.77 2.4-2.22 3.37l-.02.13 3.24 2.46.22.02c2.02-1.83 3.25-4.52 3.25-7.76z"
         fill="#F4B400"
@@ -275,3 +127,4 @@ function GoogleIcon() {
     </svg>
   );
 }
+

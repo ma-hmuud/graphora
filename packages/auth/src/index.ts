@@ -42,9 +42,6 @@ export const auth = betterAuth({
     "https://graphora-visualizer.vercel.app"
   ],
 
-  emailAndPassword: {
-    enabled: true,
-  },
 
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
