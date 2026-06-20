@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   X,
   UploadCloud,
@@ -224,32 +224,32 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60 backdrop-blur-md"
           />
 
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-[#101521] border border-outline-variant rounded-DEFAULT p-8 max-w-lg w-full shadow-2xl relative z-10"
+            className="bg-slate-50 dark:bg-[#111420] border border-slate-200 dark:border-white/10 rounded-2xl p-8 max-w-lg w-full shadow-lg dark:shadow-2xl relative z-10 overflow-hidden"
           >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-headline-md text-headline-md text-on-surface">
+            <div className="flex justify-between items-center mb-6 relative z-10">
+              <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                 {step === "columns"
                   ? "Configure Projection"
                   : "Create New Graph"}
               </h2>
               <button
                 onClick={handleClose}
-                className="text-on-surface-variant hover:text-primary transition-colors"
+                className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 p-1.5 rounded-lg transition-colors"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {step === "select" ? (
               <>
-                <p className="font-body-md text-body-md text-on-surface-variant mb-8">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6 relative z-10">
                   Select a data source to begin initializing a new graph
                   projection.
                 </p>
@@ -257,16 +257,16 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                 <div className="space-y-4">
                   <button
                     onClick={() => setStep("upload")}
-                    className="w-full bg-[#0F1117] border border-outline-variant hover:border-primary p-4 rounded-DEFAULT flex items-center gap-4 group transition-colors text-left"
+                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 hover:border-primary-container/30 dark:hover:border-[#c0c1ff]/30 hover:bg-slate-100/50 dark:hover:bg-black/35 p-4 rounded-xl flex items-center gap-4 group transition-colors duration-200 text-left relative z-10"
                   >
-                    <div className="w-12 h-12 bg-surface-container rounded border border-outline-variant group-hover:border-primary/50 flex items-center justify-center text-primary">
+                    <div className="w-12 h-12 bg-primary-container/10 border-primary-container/20 group-hover:border-primary-container/40 dark:bg-[#c0c1ff]/10 dark:border-[#c0c1ff]/20 dark:group-hover:border-[#c0c1ff]/40 flex items-center justify-center text-primary-container dark:text-[#c0c1ff] transition-colors shrink-0">
                       <UploadCloud className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+                      <h3 className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-primary-container dark:group-hover:text-[#c0c1ff] transition-colors text-sm">
                         Upload new dataset
                       </h3>
-                      <p className="font-label-mono text-label-mono text-on-surface-variant mt-1">
+                      <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400 mt-1">
                         CSV supported
                       </p>
                     </div>
@@ -274,16 +274,16 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
 
                   <button
                     onClick={() => setStep("existing")}
-                    className="w-full bg-[#0F1117] border border-outline-variant hover:border-primary p-4 rounded-DEFAULT flex items-center gap-4 group transition-colors text-left"
+                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 hover:border-primary-container/30 dark:hover:border-[#c0c1ff]/30 hover:bg-slate-100/50 dark:hover:bg-black/35 p-4 rounded-xl flex items-center gap-4 group transition-colors duration-200 text-left relative z-10"
                   >
-                    <div className="w-12 h-12 bg-surface-container rounded border border-outline-variant group-hover:border-primary/50 flex items-center justify-center text-primary">
+                    <div className="w-12 h-12 bg-primary-container/10 rounded-xl border border-primary-container/20 group-hover:border-primary-container/40 flex items-center justify-center text-primary-container transition-colors shrink-0">
                       <Database className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+                      <h3 className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-primary-container dark:group-hover:text-[#c0c1ff] transition-colors text-sm">
                         Use existing dataset
                       </h3>
-                      <p className="font-label-mono text-label-mono text-on-surface-variant mt-1">
+                      <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400 mt-1">
                         Select from uploaded files
                       </p>
                     </div>
@@ -292,48 +292,48 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
               </>
             ) : step === "upload" ? (
               <>
-                <p className="font-body-md text-body-md text-on-surface-variant mb-6">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6 relative z-10">
                   Upload a dataset to validate the new pipeline.
                 </p>
                 <div className="space-y-4">
-                  <div className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT p-4">
-                    <label className="block text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-2">
+                  <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4 relative z-10">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-slate-500 dark:text-slate-400 mb-2">
                       Dataset name
                     </label>
                     <input
                       value={name}
                       onChange={(event) => setName(event.target.value)}
-                      className="w-full bg-transparent text-on-surface text-sm border border-outline-variant rounded-DEFAULT px-3 py-2 focus:outline-none focus:border-primary"
+                      className="w-full bg-white dark:bg-black/30 text-slate-800 dark:text-slate-200 text-sm border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary-container/40 dark:focus:border-[#c0c1ff]/40 focus:bg-white dark:focus:bg-black/40 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       placeholder="Customer Relations 2025"
                     />
                   </div>
-                  <div className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT p-4">
-                    <label className="block text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-2">
+                  <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4 relative z-10">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-slate-500 dark:text-slate-400 mb-2">
                       Description (optional)
                     </label>
                     <textarea
                       value={description}
                       onChange={(event) => setDescription(event.target.value)}
-                      className="w-full bg-transparent text-on-surface text-sm border border-outline-variant rounded-DEFAULT px-3 py-2 h-24 resize-none focus:outline-none focus:border-primary"
+                      className="w-full bg-white dark:bg-black/30 text-slate-800 dark:text-slate-200 text-sm border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 h-24 resize-none focus:outline-none focus:border-primary-container/40 dark:focus:border-[#c0c1ff]/40 focus:bg-white dark:focus:bg-black/40 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       placeholder="Short note about this dataset."
                     />
                   </div>
-                  <div className="bg-[#0B0F19] border border-dashed border-outline-variant rounded-DEFAULT p-4">
-                    <label className="block text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">
+                  <div className="bg-slate-50 dark:bg-black/20 border border-dashed border-slate-200 dark:border-white/10 rounded-xl p-4 relative z-10">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-slate-500 dark:text-slate-400 mb-3">
                       Dataset file
                     </label>
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-sm text-on-surface">
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                           {file ? file.name : "No file selected"}
                         </p>
-                        <p className="text-xs text-on-surface-variant mt-1">
-                          Max 50MB. CSV/JSON/GML.
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          Max 50MB. CSV only.
                         </p>
                       </div>
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-4 py-2 border border-outline-variant rounded-DEFAULT text-xs uppercase tracking-[0.2em] text-on-surface-variant hover:text-on-surface hover:border-primary transition"
+                        className="px-4 py-2 border border-slate-200 dark:border-white/10 hover:border-primary-container/30 dark:hover:border-[#c0c1ff]/30 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-200 transition-colors"
                         type="button"
                       >
                         {file ? "Replace" : "Choose"}
@@ -349,12 +349,12 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                 </div>
                 {message && (
                   <div
-                    className={`mt-4 text-sm ${
+                    className={`mt-4 text-xs font-medium relative z-10 ${
                       status === "error"
-                        ? "text-red-300"
+                        ? "text-red-400"
                         : status === "success"
-                          ? "text-green-300"
-                          : "text-on-surface-variant"
+                          ? "text-emerald-400"
+                          : "text-slate-500 dark:text-slate-400"
                     }`}
                   >
                     {message}
@@ -363,27 +363,27 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
               </>
             ) : step === "existing" ? (
               <>
-                <p className="font-body-md text-body-md text-on-surface-variant mb-6">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6 relative z-10">
                   Choose an existing dataset to generate a graph.
                 </p>
-                <div className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT p-4 mb-4">
+                <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4 mb-4 relative z-10">
                   <div className="flex items-center gap-3">
-                    <Search className="w-4 h-4 text-on-surface-variant" />
+                    <Search className="w-4 h-4 text-slate-400" />
                     <input
                       value={search}
                       onChange={(event) => setSearch(event.target.value)}
                       placeholder="Search datasets"
-                      className="w-full bg-transparent text-on-surface text-sm focus:outline-none"
+                      className="w-full bg-transparent text-slate-800 dark:text-slate-200 text-sm focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     />
                   </div>
                 </div>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
+                <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
                   {isDatasetsLoading ? (
-                    <p className="text-on-surface-variant">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 italic">
                       Loading datasets...
                     </p>
                   ) : filteredDatasets.length === 0 ? (
-                    <p className="text-on-surface-variant">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 italic">
                       No datasets found.
                     </p>
                   ) : (
@@ -391,20 +391,23 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                       <button
                         key={dataset.id}
                         onClick={() => handleDatasetSelect(dataset)}
-                        className={`w-full text-left p-4 rounded-DEFAULT border transition-colors ${
+                        className={`w-full text-left p-4 rounded-xl border transition-all duration-300 relative z-10 flex items-center justify-between group ${
                           selectedDataset?.id === dataset.id
-                            ? "border-primary bg-primary/10"
-                            : "border-outline-variant bg-[#0F1117] hover:border-primary"
+                            ? "border-primary-container/40 bg-primary-container/10 text-primary-container dark:border-[#c0c1ff]/40 dark:bg-[#c0c1ff]/10 dark:text-[#c0c1ff]"
+                            : "border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-black/20 hover:border-primary-container/30 dark:hover:border-[#c0c1ff]/30 hover:bg-slate-100 dark:hover:bg-black/35"
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-headline-sm text-headline-sm text-on-surface">
-                              {dataset.name}
-                            </h4>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-on-surface-variant" />
+                        <div>
+                          <h4 className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-primary-container dark:group-hover:text-[#c0c1ff] transition-colors text-sm">
+                            {dataset.name}
+                          </h4>
+                          {dataset.description && (
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                              {dataset.description}
+                            </p>
+                          )}
                         </div>
+                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary-container dark:group-hover:text-[#c0c1ff] transition-colors" />
                       </button>
                     ))
                   )}
@@ -412,13 +415,13 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
               </>
             ) : (
               <>
-                <p className="font-body-md text-body-md text-on-surface-variant mb-6">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6 relative z-10">
                   Define the relationships by selecting the columns to be used
                   as nodes.
                 </p>
                 <div className="space-y-6">
-                  <div className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT p-4">
-                    <label className="block text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">
+                  <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4 relative z-10">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-slate-500 dark:text-slate-400 mb-2">
                       Graph Name
                     </label>
                     <input
@@ -429,16 +432,16 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                           name: e.target.value,
                         }))
                       }
-                      className="w-full bg-transparent text-on-surface text-sm border border-outline-variant rounded-DEFAULT px-3 py-2 focus:outline-none focus:border-primary"
+                      className="w-full bg-white dark:bg-black/30 text-slate-800 dark:text-slate-200 text-sm border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary-container/40 dark:focus:border-[#c0c1ff]/40 focus:bg-white dark:focus:bg-black/40 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       placeholder={`${selectedDataset?.name} Graph`}
                     />
                   </div>
-                  <div className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT p-4">
-                    <label className="block text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">
+                  <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4 relative z-10">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-slate-500 dark:text-slate-400 mb-2">
                       Source Column (Origin Node)
                     </label>
                     {isHeadersLoading ? (
-                      <div className="h-10 bg-surface-container animate-pulse rounded" />
+                      <div className="h-10 bg-slate-100 dark:bg-black/30 animate-pulse rounded-xl border border-slate-200 dark:border-white/10" />
                     ) : (
                       <select
                         value={graphConfig.sourceColumn}
@@ -448,11 +451,20 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                             sourceColumn: e.target.value,
                           }))
                         }
-                        className="w-full bg-[#1E293B] text-on-surface text-sm border border-outline-variant rounded-DEFAULT px-3 py-2 focus:outline-none focus:border-primary"
+                        className="w-full bg-white dark:bg-[#161a2b] text-slate-800 dark:text-slate-200 text-sm border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary-container/40 dark:focus:border-[#c0c1ff]/40"
                       >
-                        <option value="">Select column...</option>
+                        <option
+                          value=""
+                          className="bg-white text-slate-800 dark:bg-[#161a2b] dark:text-slate-200"
+                        >
+                          Select column...
+                        </option>
                         {headers.map((h) => (
-                          <option key={`src-${h}`} value={h}>
+                          <option
+                            key={`src-${h}`}
+                            value={h}
+                            className="bg-white text-slate-800 dark:bg-[#161a2b] dark:text-slate-200"
+                          >
                             {h}
                           </option>
                         ))}
@@ -460,12 +472,12 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                     )}
                   </div>
 
-                  <div className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT p-4">
-                    <label className="block text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">
+                  <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4 relative z-10">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-slate-500 dark:text-slate-400 mb-2">
                       Target Column (Destination Node)
                     </label>
                     {isHeadersLoading ? (
-                      <div className="h-10 bg-surface-container animate-pulse rounded" />
+                      <div className="h-10 bg-slate-100 dark:bg-black/30 animate-pulse rounded-xl border border-slate-200 dark:border-white/10" />
                     ) : (
                       <select
                         value={graphConfig.targetColumn}
@@ -475,11 +487,20 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                             targetColumn: e.target.value,
                           }))
                         }
-                        className="w-full bg-[#1E293B] text-on-surface text-sm border border-outline-variant rounded-DEFAULT px-3 py-2 focus:outline-none focus:border-primary"
+                        className="w-full bg-white dark:bg-[#161a2b] text-slate-800 dark:text-slate-200 text-sm border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary-container/40 dark:focus:border-[#c0c1ff]/40"
                       >
-                        <option value="">Select column...</option>
+                        <option
+                          value=""
+                          className="bg-white text-slate-800 dark:bg-[#161a2b] dark:text-slate-200"
+                        >
+                          Select column...
+                        </option>
                         {headers.map((h) => (
-                          <option key={`dst-${h}`} value={h}>
+                          <option
+                            key={`dst-${h}`}
+                            value={h}
+                            className="bg-white text-slate-800 dark:bg-[#161a2b] dark:text-slate-200"
+                          >
                             {h}
                           </option>
                         ))}
@@ -490,13 +511,13 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
               </>
             )}
 
-            <div className="mt-8 pt-6 border-t border-outline-variant flex justify-between items-center">
+            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10 flex justify-between items-center relative z-10">
               {step !== "select" ? (
                 <button
                   onClick={() =>
                     setStep(step === "columns" ? "existing" : "select")
                   }
-                  className="px-4 py-2 font-label-mono text-label-mono text-on-surface-variant hover:text-on-surface transition-colors"
+                  className="px-4 py-2 text-xs font-semibold tracking-wider uppercase text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
                 >
                   Back
                 </button>
@@ -506,7 +527,7 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
               <div className="flex gap-3">
                 <button
                   onClick={handleClose}
-                  className="px-4 py-2 font-label-mono text-label-mono text-on-surface-variant hover:text-on-surface transition-colors"
+                  className="px-4 py-2 text-xs font-semibold tracking-wider uppercase text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -514,7 +535,7 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                   <button
                     onClick={handleUpload}
                     disabled={status === "uploading"}
-                    className="px-5 py-2 rounded-DEFAULT bg-inverse-primary hover:bg-primary-container text-white font-label-mono text-label-mono transition-colors shadow-[0_0_12px_rgba(192,193,255,0.2)] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-5 py-2.5 rounded-lg bg-primary-container hover:bg-[#6c6fed] text-white font-semibold text-xs tracking-wider uppercase transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {status === "uploading" ? "Uploading..." : "Upload"}
                     <ArrowRight className="w-4 h-4" />
@@ -526,7 +547,7 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                     disabled={
                       !graphConfig.sourceColumn || !graphConfig.targetColumn
                     }
-                    className="px-5 py-2 rounded-DEFAULT bg-inverse-primary hover:bg-primary-container text-white font-label-mono text-label-mono transition-colors shadow-[0_0_12px_rgba(192,193,255,0.2)] flex items-center gap-2 disabled:opacity-50"
+                    className="px-5 py-2.5 rounded-lg bg-primary-container hover:bg-[#6c6fed] text-white font-semibold text-xs tracking-wider uppercase transition-colors duration-200 flex items-center gap-2 disabled:opacity-50"
                   >
                     Create Graph
                     <ArrowRight className="w-4 h-4" />

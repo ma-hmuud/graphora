@@ -22,6 +22,11 @@ import { formatDate } from "@/lib/format-date";
 import { CreateGraphModal } from "@/components/dashboard/create-graph-modal";
 import { DeleteModal } from "@/components/dashboard/delete-modal";
 
+const numberFormatter = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
 export default function GraphsPage() {
   const { data: session, isPending: isAuthPending } = authClient.useSession();
   const { data: graphs, isLoading } = useGraphs();
@@ -40,89 +45,95 @@ export default function GraphsPage() {
       [graph.name, graph.dataset.name, graph.status]
         .join(" ")
         .toLowerCase()
-        .includes(term),
+        .includes(term)
     );
   }, [graphs, search]);
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ["graphs"] });
-    toast("Refreshing graphs...");
+    toast.success("Refreshed graphs index.");
   };
 
   useEffect(() => {
     if (!isAuthPending && !session?.user) {
       router.push("/login");
-    } else if (!isAuthPending && session?.user && !session.user.emailVerified) {
-      router.push("/verify-email");
     }
   }, [session, isAuthPending, router]);
 
   if (isAuthPending) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19] flex items-center justify-center text-muted-foreground">
         Loading...
       </div>
     );
   }
 
-  if (!session?.user || !session.user.emailVerified) {
+  if (!session?.user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19] flex items-center justify-center text-muted-foreground">
         Loading...
       </div>
     );
   }
 
   return (
-    <div className="bg-surface text-on-surface font-body-md min-h-screen flex">
-      <main className="grow transition-[margin] duration-300">
-        <div className="max-w-6xl mx-auto space-y-6">
-          <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div className="bg-slate-50 dark:bg-[#0B0F19] text-foreground min-h-screen flex flex-col">
+      <main className="grow transition-all duration-300 px-4 py-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          
+          {/* Header */}
+          <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-slate-200 dark:border-white/10">
             <div>
-              <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">
+              <div className="inline-flex items-center gap-2 border border-[#8083ff]/20 bg-[#8083ff]/5 dark:border-[#c0c1ff]/20 dark:bg-[#c0c1ff]/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[#8083ff] dark:text-[#c0c1ff] rounded-full mb-3">
+                Knowledge Workspace
+              </div>
+              <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-slate-200 dark:to-slate-500 bg-clip-text text-transparent">
                 Graphs
               </h2>
-              <p className="text-on-surface-variant font-body-md text-body-md">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 Saved graph projects with metrics and datasets.
               </p>
             </div>
+            
             <div className="flex gap-3">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-inverse-primary hover:bg-primary-container text-white px-6 py-3 rounded-DEFAULT font-label-mono text-label-mono font-medium transition-colors shadow-[0_0_12px_rgba(192,193,255,0.2)] flex items-center gap-2"
+                className="bg-[#8083ff] hover:bg-[#6c6fed] text-white px-5 py-2.5 text-xs font-semibold tracking-wide uppercase flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-[0_0_20px_rgba(192,193,255,0.25)] rounded-lg active:scale-[0.98]"
               >
                 <Plus className="w-4 h-4" />
                 Create Graph
               </button>
               <button
                 onClick={handleRefresh}
-                className="bg-[#1E293B] hover:bg-secondary-container text-white px-6 py-3 rounded-DEFAULT font-label-mono text-label-mono font-medium transition-colors flex items-center gap-2"
+                className="border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 px-4 py-2.5 text-xs font-semibold tracking-wide uppercase flex items-center justify-center gap-2 transition duration-200 rounded-lg"
               >
                 <RefreshCcw className="w-4 h-4" />
-                Refresh Graphs
+                Refresh
               </button>
             </div>
           </header>
 
-          <div className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-4">
+          {/* Search box card */}
+          <div className="bg-white dark:bg-[#111420]/80 border border-slate-200 dark:border-white/10 rounded-2xl p-4 backdrop-blur-xl shadow-sm dark:shadow-xl">
             <div className="flex items-center gap-3">
-              <Search className="w-4 h-4 text-on-surface-variant" />
+              <Search className="w-4 h-4 text-slate-400" />
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search graphs by name, dataset, status"
-                className="w-full bg-transparent text-on-surface text-sm focus:outline-none"
+                placeholder="Search graphs by name, dataset..."
+                className="w-full bg-transparent text-slate-800 dark:text-slate-200 text-sm focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
           </div>
 
-          <section className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6">
+          {/* Table list card */}
+          <section className="bg-white dark:bg-[#111420]/80 border border-slate-200 dark:border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-sm dark:shadow-xl overflow-hidden">
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Array.from({ length: 4 }).map((_, index) => (
                   <div
                     key={`graph-skeleton-${index}`}
-                    className="border border-outline-variant/40 rounded-DEFAULT p-4 space-y-3"
+                    className="border border-slate-200/50 dark:border-white/5 bg-slate-100 dark:bg-black/10 rounded-xl p-5 space-y-3 animate-pulse"
                   >
                     <Skeleton className="h-4 w-40" />
                     <Skeleton className="h-3 w-28" />
@@ -130,112 +141,110 @@ export default function GraphsPage() {
                   </div>
                 ))}
               </div>
+            ) : filteredGraphs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Network className="w-12 h-12 text-slate-400 dark:text-slate-600 mb-3" />
+                <p className="text-sm text-slate-500 dark:text-slate-400 italic">No graphs found.</p>
+              </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {filteredGraphs.length === 0 ? (
-                  <p className="text-on-surface-variant">No graphs for now.</p>
-                ) : (
-                  filteredGraphs.map((graph) => (
-                    <div
-                      key={graph.id}
-                      className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-5 hover:border-primary/40 transition-colors group"
-                    >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredGraphs.map((graph) => (
+                  <div
+                    key={graph.id}
+                    className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-5 hover:border-[#8083ff]/30 dark:hover:border-[#c0c1ff]/30 hover:bg-slate-100/50 dark:hover:bg-black/35 transition-all duration-300 group flex flex-col justify-between"
+                  >
+                    <div>
                       <div className="flex items-start justify-between gap-3">
                         <Link href={`/dashboard/graphs/${graph.id}`}>
-                          <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+                          <h3 className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-[#8083ff] dark:group-hover:text-[#c0c1ff] transition-colors text-base">
                             {graph.name}
                           </h3>
-                          <p className="text-on-surface-variant text-xs mt-1">
+                          <p className="text-xs text-slate-550 dark:text-slate-400 mt-1">
                             Dataset: {graph.dataset.name}
                           </p>
                         </Link>
-                        {graph.status === "PROCESSING" ? (
-                          <>
-                            <RefreshCw className="w-5 h-5 animate-spin" />
-                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#f39c12] rounded-full animate-ping opacity-75" />
-                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#f39c12] rounded-full" />
-                          </>
-                        ) : graph.status === "FAILED" ? (
-                          <AlertCircle className="w-5 h-5" />
-                        ) : (
-                          <Network className="w-5 h-5" />
-                        )}
+                        <div className="shrink-0">
+                          {graph.status === "PROCESSING" ? (
+                            <RefreshCw className="w-5 h-5 text-[#8083ff] animate-spin" />
+                          ) : graph.status === "FAILED" ? (
+                            <AlertCircle className="w-5 h-5 text-red-400" />
+                          ) : (
+                            <Network className="w-5 h-5 text-[#8083ff] dark:text-[#c0c1ff]" />
+                          )}
+                        </div>
                       </div>
-                      <div className="mt-4 grid grid-cols-2 gap-3">
-                        <div className="bg-[#0B0F19] border border-outline-variant/40 rounded-DEFAULT p-3">
-                          <p className="text-xs text-on-surface-variant">
-                            Nodes
-                          </p>
-                          <p className="text-on-surface font-label-mono text-label-mono">
-                            {graph.nodeCount ?? "-"}
-                          </p>
+ 
+                      {/* Mini Stats Info block */}
+                      <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-white dark:bg-black/30 border border-slate-200 dark:border-white/5 rounded-lg p-2.5">
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">Nodes</span>
+                          <span className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200">{graph.nodeCount ?? "-"}</span>
                         </div>
-                        <div className="bg-[#0B0F19] border border-outline-variant/40 rounded-DEFAULT p-3">
-                          <p className="text-xs text-on-surface-variant">
-                            Edges
-                          </p>
-                          <p className="text-on-surface font-label-mono text-label-mono">
-                            {graph.edgeCount ?? "-"}
-                          </p>
+                        <div className="bg-white dark:bg-black/30 border border-slate-200 dark:border-white/5 rounded-lg p-2.5">
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">Edges</span>
+                          <span className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200">{graph.edgeCount ?? "-"}</span>
                         </div>
-                        <div className="bg-[#0B0F19] border border-outline-variant/40 rounded-DEFAULT p-3">
-                          <p className="text-xs text-on-surface-variant">
-                            Source Column
-                          </p>
-                          <p className="text-on-surface font-label-mono text-label-mono">
+                        <div className="bg-white dark:bg-black/30 border border-slate-200 dark:border-white/5 rounded-lg p-2.5 overflow-hidden">
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">Source</span>
+                          <span className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200 truncate block" title={graph.sourceColumn ?? ""}>
                             {graph.sourceColumn ?? "-"}
-                          </p>
+                          </span>
                         </div>
-                        <div className="bg-[#0B0F19] border border-outline-variant/40 rounded-DEFAULT p-3">
-                          <p className="text-xs text-on-surface-variant">
-                            Target Column
-                          </p>
-                          <p className="text-on-surface font-label-mono text-label-mono">
+                        <div className="bg-white dark:bg-black/30 border border-slate-200 dark:border-white/5 rounded-lg p-2.5 overflow-hidden">
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">Target</span>
+                          <span className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200 truncate block" title={graph.targetColumn ?? ""}>
                             {graph.targetColumn ?? "-"}
-                          </p>
+                          </span>
                         </div>
                       </div>
-                      <div className="mt-4 flex items-center justify-between text-xs text-on-surface-variant">
-                        <span>{formatDate(graph.updatedAt)}</span>
+                    </div>
+ 
+                    <div className="mt-6 pt-4 border-t border-slate-205 dark:border-white/5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                      <span className="text-[11px] font-mono">{formatDate(graph.updatedAt)}</span>
+                      <div className="flex items-center gap-3">
+                        <Link
+                          href={`/dashboard/graphs/${graph.id}`}
+                          className="text-[#8083ff] dark:text-[#c0c1ff] hover:underline text-xs font-semibold uppercase tracking-wider"
+                        >
+                          View
+                        </Link>
                         <button
                           onClick={() =>
                             setDeletingGraph({ id: graph.id, name: graph.name })
                           }
-                          className="text-error font-label-mono text-label-mono"
+                          className="text-red-400 hover:text-red-300 text-xs font-semibold uppercase tracking-wider"
                         >
                           Delete
                         </button>
                       </div>
                     </div>
-                  ))
-                )}
+ 
+                  </div>
+                ))}
               </div>
             )}
           </section>
         </div>
-        <CreateGraphModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        />
-        <DeleteModal
-          isOpen={Boolean(deletingGraph)}
-          t={deletingGraph}
-          onClose={() => setDeletingGraph(undefined)}
-          onDeleted={() => {
-            queryClient.invalidateQueries({ queryKey: ["graphs"] });
-          }}
-          deleteT={async (id: string) => {
-            try {
-              await apolloClient.mutate({
-                mutation: DELETE_GRAPH_MUTATION,
-                variables: { id },
-              });
-            } catch (error: any) {
-              throw error;
-            }
-          }}
-        />
       </main>
+
+      <CreateGraphModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+      <DeleteModal
+        isOpen={Boolean(deletingGraph)}
+        t={deletingGraph}
+        onClose={() => setDeletingGraph(undefined)}
+        onDeleted={() => {
+          queryClient.invalidateQueries({ queryKey: ["graphs"] });
+        }}
+        deleteT={async (id: string) => {
+          await apolloClient.mutate({
+            mutation: DELETE_GRAPH_MUTATION,
+            variables: { id },
+          });
+        }}
+      />
     </div>
   );
 }

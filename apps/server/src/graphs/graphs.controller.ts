@@ -14,6 +14,9 @@ type WorkerPayload = {
     density?: number | null;
     componentsCount?: number | null;
     communitiesCount?: number | null;
+    averageDegree?: number | null;
+    diameter?: number | null;
+    clusteringCoefficient?: number | null;
   };
   graphData?: unknown;
 };
@@ -50,6 +53,9 @@ export class GraphsController {
         density: payload.metrics?.density ?? undefined,
         componentsCount: payload.metrics?.componentsCount ?? undefined,
         communitiesCount: payload.metrics?.communitiesCount ?? undefined,
+        averageDegree: payload.metrics?.averageDegree ?? undefined,
+        diameter: payload.metrics?.diameter ?? undefined,
+        clusteringCoefficient: payload.metrics?.clusteringCoefficient ?? undefined,
         graphData: payload.graphData ?? undefined,
       });
       console.log(`[GraphsController] Successfully updated graph ${payload.graphId}`);
@@ -61,3 +67,4 @@ export class GraphsController {
     return { ok: true };
   }
 }
+

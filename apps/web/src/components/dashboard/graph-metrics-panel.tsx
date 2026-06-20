@@ -3,14 +3,21 @@
 import { useMemo } from "react";
 import type { Graph } from "@/lib/types";
 
-export type MetricKey = "degree" | "betweenness" | "closeness" | "pagerank";
+export type MetricKey = 
+  | "pagerank"
+  | "degreeCentrality"
+  | "betweennessCentrality"
+  | "closenessCentrality"
+  | "eigenvectorCentrality";
 
 type NodeMetrics = {
-  degree: number;
-  betweenness: number;
-  closeness: number;
   pagerank: number;
+  degreeCentrality?: number;
+  betweennessCentrality?: number;
+  closenessCentrality?: number;
+  eigenvectorCentrality?: number;
 };
+
 
 type GraphNode = {
   id: string;
@@ -32,11 +39,14 @@ export type GraphData = {
 };
 
 const metricLabels: Record<MetricKey, string> = {
-  degree: "Degree",
-  betweenness: "Betweenness",
-  closeness: "Closeness",
   pagerank: "PageRank",
+  degreeCentrality: "Degree Centrality",
+  betweennessCentrality: "Betweenness Centrality",
+  closenessCentrality: "Closeness Centrality",
+  eigenvectorCentrality: "Eigenvector Centrality",
 };
+
+
 
 export function GraphMetricsPanel({
   graph,

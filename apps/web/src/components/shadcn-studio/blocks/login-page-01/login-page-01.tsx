@@ -59,20 +59,20 @@ const Login = () => {
   }
 
   return (
-    <div className="relative flex h-auto min-h-screen items-center justify-center overflow-x-hidden px-4 py-10 sm:px-6 lg:px-8">
+    <div className="relative flex h-auto min-h-screen items-center justify-center overflow-x-hidden px-4 py-10 sm:px-6 lg:px-8 bg-slate-50 dark:bg-[#0B0F19] text-slate-800 dark:text-slate-100">
       <div className="absolute select-none pointer-events-none opacity-40 dark:opacity-60">
         <AuthBackgroundShape />
       </div>
 
-      <Card className="z-10 w-full gap-6 py-8 px-2 sm:max-w-md border border-white/10 bg-black/40 shadow-[0_0_50px_-12px_rgba(56,189,248,0.35)] backdrop-blur-xl rounded-2xl">
+      <Card className="z-10 w-full gap-6 py-8 px-2 sm:max-w-md border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-black/40 shadow-sm dark:shadow-[0_0_50px_-12px_rgba(192,193,255,0.35)] backdrop-blur-xl rounded-2xl">
         <CardHeader className="gap-4 px-6 text-center flex flex-col items-center justify-center">
           <Logo className="gap-3" />
 
           <div className="space-y-1.5 mt-2">
-            <CardTitle className="text-2xl font-bold bg-linear-to-r from-sky-400 via-indigo-200 to-white bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold bg-linear-to-r from-primary-container to-[#6366F1] dark:from-[#c0c1ff] dark:via-primary-fixed dark:to-white bg-clip-text text-transparent">
               Access your knowledge maps
             </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground/80">
+            <CardDescription className="text-sm text-slate-500 dark:text-muted-foreground/80">
               Connect with Google to securely view and build your workspace
             </CardDescription>
           </div>
@@ -80,7 +80,7 @@ const Login = () => {
 
         <CardContent className="px-6 pt-4 flex flex-col gap-4">
           <Button
-            className="w-full justify-center gap-3 overflow-hidden border border-white/15 bg-white/5 py-6 text-sm font-medium text-white transition-all duration-300 hover:border-sky-500/40 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] active:scale-[0.98] cursor-pointer"
+            className="w-full justify-center gap-3 overflow-hidden border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-white/5 py-6 text-sm font-medium text-slate-800 dark:text-white transition-all duration-300 hover:border-primary-container/40 dark:hover:border-[#c0c1ff]/40 hover:bg-slate-100 dark:hover:bg-white/10 hover:shadow-md dark:hover:shadow-[0_0_20px_rgba(192,193,255,0.15)] active:scale-[0.98] cursor-pointer"
             disabled={googleMutation.isPending}
             onClick={() => googleMutation.mutate()}
           >
@@ -114,7 +114,7 @@ const Login = () => {
           </Button>
           <Link
             href="/"
-            className="text-sm text-center text-muted-foreground/80 hover:text-primary"
+            className="text-sm text-center text-slate-500 dark:text-muted-foreground/80 hover:text-primary"
           >
             Go back to homepage
           </Link>

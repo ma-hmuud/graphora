@@ -6,6 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import { useGraph } from "@/hooks/graphs/use-graph";
 import { Skeleton } from "@/components/skeleton";
 import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
 import type { Graph } from "@/lib/types";
 import { apolloClient } from "@/lib/apollo-client";
 import {
@@ -21,12 +22,68 @@ import {
   Search,
   Trash2,
   X,
+  Maximize2,
+  Activity,
+  Layers,
+  User,
+  Info,
+  Maximize,
+  Compass,
 } from "lucide-react";
-import type {
-  GraphData,
-  MetricKey,
-} from "@/components/dashboard/graph-metrics-panel";
 import { DeleteModal } from "@/components/dashboard/delete-modal";
+
+export type MetricKey =
+  | "pagerank"
+  | "degreeCentrality"
+  | "betweennessCentrality"
+  | "closenessCentrality"
+  | "eigenvectorCentrality";
+
+export type GraphNode = {
+  id: string;
+  x?: number;
+  y?: number;
+  community?: number;
+  metrics?: Record<string, number>;
+};
+
+export type GraphLink = {
+  source: string;
+  target: string;
+  weight?: number;
+};
+
+export type GraphData = {
+  nodes: GraphNode[];
+  links: GraphLink[];
+};
+
+const metricLabels: Record<MetricKey, string> = {
+  pagerank: "PageRank",
+  degreeCentrality: "Degree Centrality",
+  betweennessCentrality: "Betweenness Centrality",
+  closenessCentrality: "Closeness Centrality",
+  eigenvectorCentrality: "Eigenvector Centrality",
+};
+
+const COMMUNITY_COLORS = [
+  "#3B82F6",
+  "#EF4444",
+  "#10B981",
+  "#F59E0B",
+  "#6366F1",
+  "#EC4899",
+  "#8B5CF6",
+  "#14B8A6",
+  "#F97316",
+  "#06B6D4",
+  "#84CC16",
+  "#D946EF",
+  "#F43F5E",
+  "#0EA5E9",
+  "#10B981",
+  "#EAB308",
+];
 
 export default function GraphDetailPage() {
   const params = useParams<{ id: string }>();
@@ -34,17 +91,24 @@ export default function GraphDetailPage() {
   const { data: session, isPending: isAuthPending } = authClient.useSession();
   const { data: graph, isLoading } = useGraph(graphId);
   const queryClient = useQueryClient();
-  const [metric, setMetric] = useState<MetricKey>("degree");
-  const [scale, setScale] = useState<"linear" | "log">("linear");
-  const [minSize, setMinSize] = useState(3);
-  const [maxSize, setMaxSize] = useState(12);
-  const [showTooltips] = useState(true);
-  const [colorRamp, setColorRamp] = useState<"indigo" | "cyan" | "ember">(
-    "indigo",
-  );
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== "light";
+
   const [highlightNodeId, setHighlightNodeId] = useState<string | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  // Search & Filtering
+  const [query, setQuery] = useState("");
+  const [hiddenCommunities, setHiddenCommunities] = useState<Set<number>>(
+    new Set(),
+  );
+  const [sidebarTab, setSidebarTab] = useState<
+    "metrics" | "inspector" | "communities"
+  >("metrics");
+
+  const graphRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const router = useRouter();
 
   const ForceGraph2D = dynamic(
@@ -52,512 +116,118 @@ export default function GraphDetailPage() {
     { ssr: false },
   );
 
-  useEffect(() => {
-    if (!isAuthPending && !session?.user) {
-      router.push("/login");
-    } else if (!isAuthPending && session?.user && !session.user.emailVerified) {
-      router.push("/verify-email");
-    }
-  }, [session, isAuthPending, router]);
-
-  if (isAuthPending) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
-  if (!session?.user || !session.user.emailVerified) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
-  const handleDeleteGraph = async () => {
-    if (!graph) return;
-    await apolloClient.mutate({
-      mutation: DELETE_GRAPH_MUTATION,
-      variables: { id: graph.id },
-    });
-  };
-
-  const handleGoToDataset = async (datasetId: string) => {
-    if (!graph) return;
-    router.push(`/dashboard/datasets/${datasetId}`);
-  };
-
-  const handleRegenerateGraph = async () => {
-    if (!graph) return;
-    try {
-      await apolloClient.mutate({
-        mutation: REGENERATE_GRAPH_MUTATION,
-        variables: { id: graph.id },
-      });
-      toast("Graph reprocessing started.");
-      queryClient.invalidateQueries({ queryKey: ["graphs", graph.id] });
-      queryClient.invalidateQueries({ queryKey: ["graphs"] });
-    } catch (error) {
-      toast("Failed to regenerate graph.");
-    }
-  };
-
-  return (
-    <div className="bg-surface text-on-surface font-body-md min-h-screen flex">
-      <main className="grow transition-[margin] duration-300">
-        <div className="max-w-6xl mx-auto space-y-6">
-          {isLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-56" />
-              <Skeleton className="h-4 w-40" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <Skeleton key={`graph-detail-${index}`} className="h-20" />
-                ))}
-              </div>
-            </div>
-          ) : !graph ? (
-            <p className="text-on-surface-variant">Graph not found.</p>
-          ) : (
-            <>
-              <header>
-                <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">
-                  {graph.name}
-                </h2>
-                <p className="text-on-surface-variant font-body-md text-body-md">
-                  Dataset: {graph.dataset.name}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <button
-                    onClick={() => handleGoToDataset(graph.dataset.id)}
-                    className="border border-outline-variant hover:border-primary text-primary px-4 py-2 rounded-DEFAULT font-label-mono text-label-mono flex items-center gap-2"
-                  >
-                    <FolderOpen className="w-4 h-4" />
-                    Go to dataset
-                  </button>
-                  <button
-                    onClick={handleRegenerateGraph}
-                    className="border border-outline-variant hover:border-primary text-primary px-4 py-2 rounded-DEFAULT font-label-mono text-label-mono flex items-center gap-2"
-                  >
-                    <RefreshCcw className="w-4 h-4" />
-                    Regenerate graph
-                  </button>
-                  <button
-                    onClick={() => setIsDeleteOpen(true)}
-                    className="border border-error/40 hover:border-error text-error px-4 py-2 rounded-DEFAULT font-label-mono text-label-mono flex items-center gap-2"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete graph
-                  </button>
-                </div>
-              </header>
-
-              <section className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                  <div>
-                    <h3 className="font-headline-sm text-headline-sm text-on-surface">
-                      Graph stats
-                    </h3>
-                    <p className="text-on-surface-variant text-sm">
-                      Metrics snapshot for this graph.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setIsFullscreen(true)}
-                    className="px-4 py-2 rounded-DEFAULT bg-inverse-primary hover:bg-primary-container text-white text-sm"
-                  >
-                    View graph
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">Status</p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.status}
-                    </p>
-                  </div>
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">Nodes</p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.nodeCount ?? "-"}
-                    </p>
-                  </div>
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">Edges</p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.edgeCount ?? "-"}
-                    </p>
-                  </div>
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">Density</p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.density ?? "-"}
-                    </p>
-                  </div>
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">
-                      Components
-                    </p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.componentsCount ?? "-"}
-                    </p>
-                  </div>
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">
-                      Communities
-                    </p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.communitiesCount ?? "-"}
-                    </p>
-                  </div>
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">Directed</p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.isDirected ? "Yes" : "No"}
-                    </p>
-                  </div>
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">Weighted</p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.isWeighted ? "Yes" : "No"}
-                    </p>
-                  </div>
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">
-                      Components
-                    </p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.componentsCount ?? "-"}
-                    </p>
-                  </div>
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">
-                      Error message
-                    </p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.errorMessage ?? "-"}
-                    </p>
-                  </div>
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">
-                      Source column
-                    </p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.sourceColumn ?? "-"}
-                    </p>
-                  </div>
-                  <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                    <p className="text-on-surface-variant text-xs">
-                      Target column
-                    </p>
-                    <p className="text-on-surface font-label-mono text-label-mono">
-                      {graph.targetColumn ?? "-"}
-                    </p>
-                  </div>
-                </div>
-                <NodeHoverHint />
-              </section>
-            </>
-          )}
-        </div>
-        <DeleteModal
-          isOpen={isDeleteOpen}
-          t={graph ? { id: graph.id, name: graph.name } : undefined}
-          onClose={() => setIsDeleteOpen(false)}
-          onDeleted={() => {
-            queryClient.invalidateQueries({ queryKey: ["graphs"] });
-            router.push("/dashboard/graphs");
-          }}
-          deleteT={handleDeleteGraph}
-        />
-      </main>
-      {(graph?.graphData as GraphData) && isFullscreen && (
-        <FullscreenGraph
-          graph={graph!}
-          ForceGraph2D={ForceGraph2D as any}
-          metric={metric}
-          scale={scale}
-          minSize={minSize}
-          maxSize={maxSize}
-          showTooltips={showTooltips}
-          colorRamp={colorRamp}
-          onClose={() => setIsFullscreen(false)}
-          onNodeSelect={(id) => setHighlightNodeId(id)}
-          onMetricChange={setMetric}
-          onScaleChange={setScale}
-          onMinSizeChange={setMinSize}
-          onMaxSizeChange={setMaxSize}
-          onColorRampChange={setColorRamp}
-          highlightNodeId={highlightNodeId}
-        />
-      )}
-    </div>
-  );
-}
-
-function GraphCanvas({
-  graph,
-  ForceGraph2D,
-  metric,
-  scale,
-  minSize,
-  maxSize,
-  showTooltips,
-  colorRamp,
-  highlightNodeId,
-  graphRef,
-}: {
-  graph: Graph;
-  ForceGraph2D: typeof import("react-force-graph-2d").default;
-  metric: MetricKey;
-  scale: "linear" | "log";
-  minSize: number;
-  maxSize: number;
-  showTooltips: boolean;
-  colorRamp: "indigo" | "cyan" | "ember";
-  highlightNodeId?: string | null;
-  graphRef?: React.MutableRefObject<any> | null;
-}) {
-  const rawGraphData = graph.graphData as GraphData | undefined;
-  const internalRef = useRef<any>(null);
-  const fgRef = graphRef ?? internalRef;
-
-  if (!rawGraphData) {
-    return <p className="text-on-surface-variant">Graph data unavailable.</p>;
-  }
-
-  const graphData = useMemo(
-    () => ({
-      nodes: rawGraphData.nodes.map((node) => ({ ...node })),
-      links: rawGraphData.links.map((link) => ({ ...link })),
-    }),
-    [rawGraphData],
-  );
-
-  const { min, max } = useMemo(() => {
-    const values = rawGraphData.nodes
-      .map((node) => node.metrics?.[metric] ?? 0)
-      .filter((value) => Number.isFinite(value));
-    return {
-      min: values.length ? Math.min(...values) : 0,
-      max: values.length ? Math.max(...values) : 1,
-    };
-  }, [rawGraphData.nodes, metric]);
-
-  const normalize = (value: number) => {
-    const safeMin = min;
-    const safeMax = max === min ? min + 1 : max;
-    const normalized = (value - safeMin) / (safeMax - safeMin);
-    return Math.min(1, Math.max(0, normalized));
-  };
-
-  const scaleValue = (value: number) => {
-    if (scale === "log") {
-      return Math.log10(value + 1) / Math.log10(max + 1 || 2);
-    }
-    return normalize(value);
-  };
-
-  const sizeForNode = (node: any) => {
-    const value = node.metrics?.[metric] ?? 0;
-    const scaled = scaleValue(value);
-    const size = minSize + (maxSize - minSize) * scaled;
-    return highlightNodeId && node.id === highlightNodeId ? size + 2 : size;
-  };
-
-  const colorForNode = (node: any) => {
-    if (highlightNodeId && node.id === highlightNodeId) {
-      return "rgba(248, 250, 252, 0.95)";
-    }
-    const value = node.metrics?.[metric] ?? 0;
-    const scaled = scaleValue(value);
-    const palette = {
-      indigo: [99, 102, 241],
-      cyan: [34, 211, 238],
-      ember: [251, 146, 60],
-    }[colorRamp];
-    const shade = 0.25 + scaled * 0.75;
-    return `rgba(${palette[0]}, ${palette[1]}, ${palette[2]}, ${shade})`;
-  };
-
-  const shouldCanvasMode = rawGraphData.nodes.length > 2000;
-
-  return (
-    <div className="h-[480px] w-full">
-      <ForceGraph2D
-        ref={fgRef}
-        graphData={graphData}
-        nodeRelSize={4}
-        nodeVal={sizeForNode}
-        nodeColor={colorForNode}
-        linkColor={() => "rgba(99, 102, 241, 0.35)"}
-        onNodeClick={() => undefined}
-        onNodeHover={() => undefined}
-        nodeLabel={showTooltips ? (node: any) => nodeTooltip(node) : undefined}
-        warmupTicks={shouldCanvasMode ? 10 : 0}
-        cooldownTicks={shouldCanvasMode ? 20 : 0}
-        enableNodeDrag={!shouldCanvasMode}
-        nodeCanvasObjectMode={shouldCanvasMode ? () => "replace" : undefined}
-        nodeCanvasObject={
-          shouldCanvasMode
-            ? (node: any, ctx: CanvasRenderingContext2D) => {
-                const size = sizeForNode(node);
-                ctx.beginPath();
-                ctx.fillStyle = colorForNode(node);
-                ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
-                ctx.fill();
-              }
-            : undefined
-        }
-      />
-    </div>
-  );
-}
-
-function NodeHoverHint() {
-  return (
-    <div className="border-t border-outline-variant/50 pt-4 mt-6">
-      <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2">
-        Node details
-      </h3>
-      <p className="text-on-surface-variant">
-        Hover a node in fullscreen to see metrics.
-      </p>
-    </div>
-  );
-}
-
-function nodeTooltip(node: any) {
-  const metrics = node?.metrics || {};
-  return `${node.id}\nDegree: ${metrics.degree?.toFixed?.(4) ?? "-"}\nBetweenness: ${metrics.betweenness?.toFixed?.(4) ?? "-"}\nCloseness: ${metrics.closeness?.toFixed?.(4) ?? "-"}\nPageRank: ${metrics.pagerank?.toFixed?.(4) ?? "-"}`;
-}
-
-function FullscreenGraph({
-  graph,
-  ForceGraph2D,
-  metric,
-  scale,
-  minSize,
-  maxSize,
-  showTooltips,
-  colorRamp,
-  onClose,
-  onNodeSelect,
-  onMetricChange,
-  onScaleChange,
-  onMinSizeChange,
-  onMaxSizeChange,
-  onColorRampChange,
-  highlightNodeId,
-}: {
-  graph: Graph;
-  ForceGraph2D: typeof import("react-force-graph-2d").default;
-  metric: MetricKey;
-  scale: "linear" | "log";
-  minSize: number;
-  maxSize: number;
-  showTooltips: boolean;
-  colorRamp: "indigo" | "cyan" | "ember";
-  onClose: () => void;
-  onNodeSelect: (id: string | null) => void;
-  onMetricChange: (value: MetricKey) => void;
-  onScaleChange: (value: "linear" | "log") => void;
-  onMinSizeChange: (value: number) => void;
-  onMaxSizeChange: (value: number) => void;
-  onColorRampChange: (value: "indigo" | "cyan" | "ember") => void;
-  highlightNodeId: string | null;
-}) {
-  const [query, setQuery] = useState("");
-  const graphRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ width: 0, height: 0 });
-  const graphData = graph.graphData as GraphData | undefined;
-  const [hiddenCommunities, setHiddenCommunities] = useState<Set<number>>(
-    new Set(),
-  );
-
+  // ResizeObserver for Integrated Graph Container
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const ro = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
-      setSize({ width, height });
+      setCanvasSize({ width, height: height || 520 });
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [graph]);
 
-  const COMMUNITY_COLORS = [
-    "#3B82F6",
-    "#EF4444",
-    "#10B981",
-    "#F59E0B",
-    "#6366F1",
-    "#EC4899",
-    "#8B5CF6",
-    "#14B8A6",
-    "#F97316",
-    "#06B6D4",
-    "#84CC16",
-    "#D946EF",
-    "#F43F5E",
-    "#0EA5E9",
-    "#10B981",
-    "#EAB308",
-  ];
+  useEffect(() => {
+    if (!isAuthPending && !session?.user) {
+      router.push("/login");
+    }
+  }, [session, isAuthPending, router]);
 
-  const getColor = (community: number = 0) => {
-    return COMMUNITY_COLORS[community % COMMUNITY_COLORS.length];
+  const rawGraphData = graph?.graphData as GraphData | undefined;
+
+  // Clone graph data once into state to prevent resetting coordinates on every render
+  // and to avoid write errors on read-only/frozen objects from Apollo/React Query
+  const [mutableGraph, setMutableGraph] = useState<{
+    nodes: any[];
+    links: any[];
+  }>({ nodes: [], links: [] });
+
+  useEffect(() => {
+    if (rawGraphData) {
+      setMutableGraph({
+        nodes: rawGraphData.nodes.map((n) => ({ ...n })),
+        links: rawGraphData.links.map((l) => ({ ...l })),
+      });
+    } else {
+      setMutableGraph({ nodes: [], links: [] });
+    }
+  }, [rawGraphData]);
+
+  // Filter nodes & links based on hidden communities
+  const filteredGraphData = useMemo(() => {
+    const { nodes: allNodes, links: allLinks } = mutableGraph;
+    if (!allNodes.length) return { nodes: [], links: [] };
+
+    const nodes = allNodes.filter(
+      (n) => !hiddenCommunities.has(n.community ?? 0),
+    );
+    const nodeIds = new Set(nodes.map((n) => n.id));
+
+    const links = allLinks.filter((l) => {
+      const srcId =
+        typeof l.source === "object" ? (l.source as any).id : l.source;
+      const tgtId =
+        typeof l.target === "object" ? (l.target as any).id : l.target;
+      return nodeIds.has(srcId) && nodeIds.has(tgtId);
+    });
+
+    return { nodes, links };
+  }, [mutableGraph, hiddenCommunities]);
+
+  const sizeForNode = (node: any) => {
+    const baseSize = 5;
+    return highlightNodeId && node.id === highlightNodeId
+      ? baseSize + 3
+      : baseSize;
+  };
+
+  const colorForNode = (node: any) => {
+    if (highlightNodeId && node.id === highlightNodeId) {
+      return isDark ? "#FFFFFF" : "#0F172A";
+    }
+    return COMMUNITY_COLORS[(node.community ?? 0) % COMMUNITY_COLORS.length];
   };
 
   const communities = useMemo(() => {
-    if (!graphData) return [];
+    if (!rawGraphData) return [];
     const counts: Record<number, number> = {};
-    graphData.nodes.forEach((n) => {
+    rawGraphData.nodes.forEach((n) => {
       const c = n.community ?? 0;
       counts[c] = (counts[c] || 0) + 1;
     });
     return Object.entries(counts)
       .map(([id, count]) => ({ id: Number(id), count }))
       .sort((a, b) => b.count - a.count);
-  }, [graphData]);
+  }, [rawGraphData]);
 
-  const filteredGraphData = useMemo(() => {
-    if (!graphData) return { nodes: [], links: [] };
-    const nodes = graphData.nodes
-      .filter((n) => !hiddenCommunities.has(n.community ?? 0))
-      .map((n) => ({ ...n }));
-    const nodeIds = new Set(nodes.map((n) => n.id));
-    const links = graphData.links
-      .filter(
-        (l) =>
-          nodeIds.has(l.source as string) && nodeIds.has(l.target as string),
-      )
-      .map((l) => ({ ...l }));
-    return { nodes, links };
-  }, [graphData, hiddenCommunities]);
+  const selectedNode = useMemo(() => {
+    if (!highlightNodeId || !rawGraphData) return null;
+    return rawGraphData.nodes.find((n) => n.id === highlightNodeId);
+  }, [highlightNodeId, rawGraphData]);
 
   const handleSearch = () => {
-    if (!graphData) return;
+    if (!rawGraphData) return;
     const normalized = query.trim().toLowerCase();
     if (!normalized) return;
 
     const node = filteredGraphData.nodes.find((item) =>
       item.id.toLowerCase().includes(normalized),
     );
-    if (!node) return;
+    if (!node) {
+      toast.error("Node not found");
+      return;
+    }
 
-    onNodeSelect(node.id);
+    setHighlightNodeId(node.id);
+    setSidebarTab("inspector");
 
     const x = (node as any).x;
     const y = (node as any).y;
-
     if (x === undefined || y === undefined) return;
 
     graphRef.current?.centerAt(x, y, 600);
-    graphRef.current?.zoom(6, 600);
+    graphRef.current?.zoom(5, 600);
   };
 
   const toggleCommunity = (id: number) => {
@@ -567,170 +237,444 @@ function FullscreenGraph({
     setHiddenCommunities(next);
   };
 
-  const selectedNode = useMemo(() => {
-    if (!highlightNodeId || !graphData) return null;
-    return graphData.nodes.find((n) => n.id === highlightNodeId);
-  }, [highlightNodeId, graphData]);
+  const handleDeleteGraph = async () => {
+    if (!graph) return;
+    await apolloClient.mutate({
+      mutation: DELETE_GRAPH_MUTATION,
+      variables: { id: graph.id },
+    });
+  };
+
+  const handleRegenerateGraph = async () => {
+    if (!graph) return;
+    try {
+      await apolloClient.mutate({
+        mutation: REGENERATE_GRAPH_MUTATION,
+        variables: { id: graph.id },
+      });
+      toast.success("Graph reprocessing started.");
+      queryClient.invalidateQueries({ queryKey: ["graphs", graph.id] });
+      queryClient.invalidateQueries({ queryKey: ["graphs"] });
+    } catch (error) {
+      toast.error("Failed to regenerate graph.");
+    }
+  };
+
+  if (isAuthPending || isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto p-8 space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-6 w-48" />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <Skeleton className="h-[600px] lg:col-span-3 rounded-2xl" />
+          <Skeleton className="h-[600px] rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!graph) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">
+        Graph not found.
+      </div>
+    );
+  }
 
   return (
-    <div className="fixed inset-0 z-100 bg-[#0B0F19] flex">
-      <div ref={containerRef} className="grow relative overflow-hidden">
-        <button
-          onClick={onClose}
-          className="absolute top-6 left-6 z-20 text-on-surface-variant hover:text-primary transition-colors bg-[#0B0F19]/60 p-2 rounded-full backdrop-blur-md border border-outline-variant"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        {size.width > 0 && (
-          <ForceGraph2D
-            ref={graphRef}
-            width={size.width}
-            height={size.height}
-            graphData={filteredGraphData}
-            backgroundColor="#0B0F19"
-            linkColor={() => "rgba(255, 255, 255, 0.08)"}
-            onNodeClick={(node: any) => onNodeSelect(node.id)}
-            nodeLabel={(node: any) => nodeTooltip(node)}
-            nodeCanvasObject={(
-              node: any,
-              ctx: CanvasRenderingContext2D,
-              globalScale: number,
-            ) => {
-              const isHighlighted =
-                highlightNodeId && node.id === highlightNodeId;
-              const size = isHighlighted ? 6 : 4;
-              const color = isHighlighted
-                ? "#FFFFFF"
-                : getColor(node.community);
-
-              ctx.beginPath();
-              ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
-              ctx.fillStyle = color;
-              ctx.fill();
-
-              // Draw border
-              ctx.strokeStyle = "#0B0F19";
-              ctx.lineWidth = 1 / globalScale;
-              ctx.stroke();
-            }}
-          />
-        )}
-      </div>
-
-      <aside className="w-[320px] shrink-0 border-l border-outline-variant bg-[#0B0F19]/40 backdrop-blur-xl flex flex-col">
-        <div className="p-4 border-b border-outline-variant flex items-center justify-end">
-          <button className="flex items-center gap-2 text-xs text-on-surface-variant hover:text-on-surface">
-            <Bookmark className="w-3 h-3" />
-            All Bookmarks
-          </button>
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 text-foreground">
+      {/* Premium Header */}
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-white/10">
+        <div>
+          <div className="inline-flex items-center gap-2 border border-primary-container/20 bg-primary-container/5 dark:border-[#c0c1ff]/20 dark:bg-[#c0c1ff]/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-primary-container dark:text-[#c0c1ff] mb-3 rounded-full">
+            Network Workspace
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-r from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-slate-200 dark:to-slate-500 bg-clip-text text-transparent">
+            {graph.name}
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-muted-foreground mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span>
+              Dataset:{" "}
+              <span className="text-slate-700 dark:text-slate-300 font-medium">
+                {graph.dataset.name}
+              </span>
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">•</span>
+            <span>
+              Source:{" "}
+              <span className="text-primary-container dark:text-[#c0c1ff] font-semibold font-mono text-xs bg-primary-container/5 dark:bg-[#c0c1ff]/5 px-2 py-0.5 rounded-lg border border-primary-container/10 dark:border-[#c0c1ff]/10">
+                {graph.sourceColumn ?? "-"}
+              </span>
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">•</span>
+            <span>
+              Target:{" "}
+              <span className="text-primary-container dark:text-[#c0c1ff] font-semibold font-mono text-xs bg-primary-container/5 dark:bg-[#c0c1ff]/5 px-2 py-0.5 rounded-lg border border-primary-container/10 dark:border-[#c0c1ff]/10">
+                {graph.targetColumn ?? "-"}
+              </span>
+            </span>
+          </p>
         </div>
 
-        <div className="p-6 space-y-8 flex-1 overflow-y-auto scrollbar-hide">
-          <div className="space-y-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={(event) => event.key === "Enter" && handleSearch()}
-                placeholder="Search nodes..."
-                className="w-full bg-[#1E293B]/40 border border-outline-variant rounded-md pl-10 pr-4 py-2 text-sm text-on-surface focus:outline-none focus:border-primary/50"
-              />
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() =>
+              router.push(`/dashboard/datasets/${graph.dataset.id}`)
+            }
+            className="border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 px-4 py-2 text-xs font-semibold tracking-wide uppercase flex items-center gap-2 transition duration-200 rounded-lg"
+          >
+            <FolderOpen className="w-4 h-4" />
+            Dataset
+          </button>
+          <button
+            onClick={handleRegenerateGraph}
+            className="border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 px-4 py-2 text-xs font-semibold tracking-wide uppercase flex items-center gap-2 transition duration-200 rounded-lg"
+          >
+            <RefreshCcw className="w-4 h-4" />
+            Regenerate
+          </button>
+          <button
+            onClick={() => setIsDeleteOpen(true)}
+            className="border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 px-4 py-2 text-xs font-semibold tracking-wide uppercase flex items-center gap-2 transition duration-200 rounded-lg"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete
+          </button>
+        </div>
+      </header>
+
+      {/* Main Integrated Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+        {/* Left Column: Visualizer Canvas Container (70%) */}
+        <div className="lg:col-span-7 flex flex-col bg-white dark:bg-[#111420] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm dark:shadow-2xl h-[650px] relative">
+          {/* Controls Overlay Header */}
+          <div className="z-10 bg-slate-50/95 dark:bg-[#161a2b]/95 border-b border-slate-200 dark:border-white/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 border border-primary-container/20 bg-primary-container/5 dark:border-[#c0c1ff]/20 dark:bg-[#c0c1ff]/5 px-2.5 py-1 text-[10px] uppercase tracking-wider text-primary-container dark:text-[#c0c1ff] rounded-lg font-semibold">
+                Network Visualizer
+              </div>
+            </div>
+
+            {/* Quick Actions & Search */}
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  placeholder="Search nodes..."
+                  className="bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 text-xs text-slate-800 dark:text-slate-200 px-8 py-1.5 rounded-lg focus:outline-none w-36 focus:w-48 transition-all duration-300 focus:border-primary-container/50 dark:focus:border-[#c0c1ff]/50"
+                />
+              </div>
+
+              <button
+                onClick={() => {
+                  graphRef.current?.zoomToFit(400, 30);
+                  setHighlightNodeId(null);
+                }}
+                title="Fit to Screen"
+                className="p-1.5 border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-slate-650 dark:text-slate-300"
+              >
+                <Compass className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
-          <div>
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-4">
-              Node Info
-            </h4>
-            {selectedNode ? (
-              <div className="space-y-4">
-                <div>
-                  <div className="text-xs text-on-surface-variant">ID</div>
-                  <div className="text-sm font-medium text-on-surface truncate">
-                    {selectedNode.id}
-                  </div>
+          {/* Canvas Render Area */}
+          <div
+            ref={containerRef}
+            className="grow bg-slate-50 dark:bg-[#090b14] relative"
+          >
+            {canvasSize.width > 0 && rawGraphData && (
+              <ForceGraph2D
+                ref={graphRef}
+                width={canvasSize.width}
+                height={canvasSize.height}
+                graphData={filteredGraphData}
+                backgroundColor={isDark ? "#090b14" : "#f8fafc"}
+                nodeRelSize={4}
+                nodeVal={sizeForNode}
+                nodeColor={colorForNode}
+                linkColor={() =>
+                  isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)"
+                }
+                onNodeClick={(node: any) => setHighlightNodeId(node.id)}
+                nodeLabel={(node: any) =>
+                  `${node.id}\n(Click to inspect properties)`
+                }
+                enableNodeDrag={rawGraphData.nodes.length < 1500}
+                nodeCanvasObject={(
+                  node: any,
+                  ctx: CanvasRenderingContext2D,
+                  globalScale: number,
+                ) => {
+                  const isHighlighted =
+                    highlightNodeId && node.id === highlightNodeId;
+                  const size = sizeForNode(node);
+                  const color = colorForNode(node);
+
+                  ctx.beginPath();
+                  ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
+                  ctx.fillStyle = color;
+                  ctx.fill();
+
+                  // Highlight ring
+                  if (isHighlighted) {
+                    ctx.strokeStyle = isDark ? "#FFFFFF" : "#0F172A";
+                    ctx.lineWidth = 2 / globalScale;
+                    ctx.stroke();
+                  } else {
+                    ctx.strokeStyle = isDark ? "#090b14" : "#f8fafc";
+                    ctx.lineWidth = 1 / globalScale;
+                    ctx.stroke();
+                  }
+                }}
+              />
+            )}
+
+            {/* Interactive instructions */}
+            <div className="absolute bottom-4 left-4 bg-white/80 dark:bg-black/60 backdrop-blur border border-slate-200 dark:border-white/5 px-3 py-1.5 rounded-lg pointer-events-none">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                Left Click: drag node/pan view · Scroll: zoom in/out · Click
+                node to inspect
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Information & Inspection Tabs (30%) */}
+        <div className="lg:col-span-3 flex flex-col bg-white dark:bg-[#111420] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm dark:shadow-2xl h-[650px]">
+          {/* Tab Selection */}
+          <div className="grid grid-cols-3 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#161a2b]">
+            <button
+              onClick={() => setSidebarTab("metrics")}
+              className={`py-3.5 text-xs font-bold transition-all flex flex-col items-center gap-1 border-b-2 ${
+                sidebarTab === "metrics"
+                  ? "border-primary-container dark:border-[#c0c1ff] text-primary-container dark:text-[#c0c1ff] bg-primary-container/5 dark:bg-[#c0c1ff]/5"
+                  : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" />
+              Network
+            </button>
+            <button
+              onClick={() => setSidebarTab("inspector")}
+              className={`py-3.5 text-xs font-bold transition-all flex flex-col items-center gap-1 border-b-2 ${
+                sidebarTab === "inspector"
+                  ? "border-primary-container dark:border-[#c0c1ff] text-primary-container dark:text-[#c0c1ff] bg-primary-container/5 dark:bg-[#c0c1ff]/5"
+                  : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+              }`}
+            >
+              <User className="w-3.5 h-3.5" />
+              Inspector
+            </button>
+            <button
+              onClick={() => setSidebarTab("communities")}
+              className={`py-3.5 text-xs font-bold transition-all flex flex-col items-center gap-1 border-b-2 ${
+                sidebarTab === "communities"
+                  ? "border-primary-container dark:border-[#c0c1ff] text-primary-container dark:text-[#c0c1ff] bg-primary-container/5 dark:bg-[#c0c1ff]/5"
+                  : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              Legend
+            </button>
+          </div>
+
+          {/* Tab Contents */}
+          <div className="flex-1 p-6 overflow-y-auto space-y-6">
+            {/* Tab: Network Metrics */}
+            {sidebarTab === "metrics" && (
+              <div className="space-y-4 animate-fadeIn">
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-2">
+                  <Info className="w-4 h-4 text-primary-container dark:text-[#c0c1ff]" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300">
+                    Diagnostics Summary
+                  </span>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  {Object.entries(selectedNode.metrics || {}).map(
-                    ([key, val]) => (
-                      <div key={key}>
-                        <div className="text-[10px] text-on-surface-variant uppercase">
-                          {key}
-                        </div>
-                        <div className="text-sm font-mono text-on-surface">
-                          {typeof val === "number" ? val.toFixed(4) : val}
-                        </div>
-                      </div>
-                    ),
-                  )}
+
+                <div className="space-y-2">
+                  {[
+                    { label: "Total Nodes", val: graph.nodeCount },
+                    { label: "Total Edges", val: graph.edgeCount },
+                    { label: "Source Column", val: graph.sourceColumn },
+                    { label: "Target Column", val: graph.targetColumn },
+                    { label: "Density", val: graph.density?.toFixed(5) },
+                    { label: "Weakly Components", val: graph.componentsCount },
+                    { label: "Louvain Communities", val: communities.length },
+                    {
+                      label: "Average Degree",
+                      val: graph.averageDegree?.toFixed(4),
+                    },
+                    { label: "Network Diameter", val: graph.diameter },
+                    {
+                      label: "Clustering Coefficient",
+                      val: graph.clusteringCoefficient?.toFixed(4),
+                    },
+                  ].map(({ label, val }) => (
+                    <div
+                      key={label}
+                      className="flex justify-between items-center bg-slate-50 dark:bg-black/25 border border-slate-100 dark:border-white/5 px-3.5 py-2.5 rounded-lg"
+                    >
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        {label}
+                      </span>
+                      <span
+                        className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200 truncate max-w-[140px]"
+                        title={val?.toString() ?? ""}
+                      >
+                        {val ?? "-"}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ) : (
-              <p className="text-xs text-on-surface-variant italic">
-                Click a node to inspect it
-              </p>
+            )}
+
+            {/* Tab: Node Inspector */}
+            {sidebarTab === "inspector" && (
+              <div className="space-y-4 animate-fadeIn">
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-2">
+                  <User className="w-4 h-4 text-primary-container dark:text-[#c0c1ff]" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300">
+                    Node Properties
+                  </span>
+                </div>
+
+                {selectedNode ? (
+                  <div className="space-y-4">
+                    <div className="bg-slate-50 dark:bg-black/35 border border-slate-200 dark:border-white/10 p-3 rounded-lg">
+                      <span className="text-[10px] text-slate-550 dark:text-slate-400 uppercase font-medium">
+                        Identifier
+                      </span>
+                      <div className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate">
+                        {selectedNode.id}
+                      </div>
+                      <div className="text-[10px] text-primary-container dark:text-[#c0c1ff] mt-1">
+                        Community Cluster: {selectedNode.community ?? 0}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      {[
+                        { key: "degreeCentrality", label: "Degree Centrality" },
+                        {
+                          key: "betweennessCentrality",
+                          label: "Betweenness Centrality",
+                        },
+                        {
+                          key: "closenessCentrality",
+                          label: "Closeness Centrality",
+                        },
+                        {
+                          key: "eigenvectorCentrality",
+                          label: "Eigenvector Centrality",
+                        },
+                        { key: "pagerank", label: "PageRank" },
+                      ].map(({ key, label }) => {
+                        const val = (selectedNode.metrics as any)?.[key];
+                        return (
+                          <div
+                            key={key}
+                            className="flex justify-between items-center bg-slate-50 dark:bg-black/25 border border-slate-100 dark:border-white/5 px-3 py-2 rounded-lg"
+                          >
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                              {label}
+                            </span>
+                            <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">
+                              {typeof val === "number" ? val.toFixed(5) : "-"}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Info className="w-8 h-8 text-slate-450 dark:text-slate-600 mb-2" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 italic">
+                      Click a node on the canvas to inspect its centrality
+                      properties
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tab: Communities List */}
+            {sidebarTab === "communities" && (
+              <div className="space-y-4 animate-fadeIn">
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-2">
+                  <Layers className="w-4 h-4 text-primary-container dark:text-[#c0c1ff]" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300">
+                    Cluster Legend
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mb-2">
+                  Toggle clusters to isolate subgraph elements.
+                </p>
+
+                <div className="space-y-1.5 max-h-[420px] overflow-y-auto pr-1">
+                  {communities.map((comm) => {
+                    const isHidden = hiddenCommunities.has(comm.id);
+                    const color =
+                      COMMUNITY_COLORS[comm.id % COMMUNITY_COLORS.length];
+                    return (
+                      <div
+                        key={comm.id}
+                        onClick={() => toggleCommunity(comm.id)}
+                        className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition border ${
+                          isHidden
+                            ? "bg-transparent border-slate-100 dark:border-white/5 opacity-40 hover:opacity-60"
+                            : "bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-black/35"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span
+                            className="w-3 h-3 rounded-full shrink-0 border"
+                            style={{
+                              backgroundColor: isHidden ? "transparent" : color,
+                              borderColor: color,
+                            }}
+                          />
+                          <span
+                            className={`text-xs ${isHidden ? "text-slate-400" : "text-slate-800 dark:text-slate-200"}`}
+                          >
+                            Cluster {comm.id}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-200 dark:bg-white/5 px-2 py-0.5 rounded">
+                          {comm.count} nodes
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             )}
           </div>
 
-          <div className="flex-1 min-h-0 flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-                Communities
-              </h4>
-            </div>
-            <div className="space-y-1 overflow-y-auto pr-2 max-h-[400px]">
-              {communities.map((comm) => (
-                <div
-                  key={comm.id}
-                  className="flex items-center gap-3 group cursor-pointer py-1"
-                  onClick={() => toggleCommunity(comm.id)}
-                >
-                  <div
-                    className={`w-3 h-3 rounded-full flex items-center justify-center border transition-all ${
-                      hiddenCommunities.has(comm.id)
-                        ? "border-outline-variant bg-transparent"
-                        : "border-transparent"
-                    }`}
-                    style={{
-                      backgroundColor: hiddenCommunities.has(comm.id)
-                        ? "transparent"
-                        : getColor(comm.id),
-                    }}
-                  >
-                    {!hiddenCommunities.has(comm.id) && (
-                      <div className="w-1 h-1 bg-white rounded-full" />
-                    )}
-                  </div>
-                  <span
-                    className={`text-xs flex-1 transition-colors ${
-                      hiddenCommunities.has(comm.id)
-                        ? "text-on-surface-variant/40"
-                        : "text-on-surface-variant group-hover:text-on-surface"
-                    }`}
-                  >
-                    Community {comm.id}
-                  </span>
-                  <span className="text-[10px] font-mono text-on-surface-variant/40">
-                    {comm.count}
-                  </span>
-                </div>
-              ))}
-            </div>
+          {/* Footer info strip */}
+          <div className="p-4 bg-slate-50 dark:bg-[#161a2b] border-t border-slate-200 dark:border-white/10 text-center">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 tracking-wide">
+              {rawGraphData?.nodes?.length || 0} nodes ·{" "}
+              {rawGraphData?.links?.length || 0} edges
+            </span>
           </div>
         </div>
+      </div>
 
-        <div className="p-4 border-t border-outline-variant bg-[#0B0F19]/60">
-          <div className="flex items-center justify-between text-[10px] font-mono text-on-surface-variant/60 uppercase tracking-tighter">
-            <span>{graph.nodeCount} nodes</span>
-            <span>·</span>
-            <span>{graph.edgeCount} edges</span>
-            <span>·</span>
-            <span>{communities.length} communities</span>
-          </div>
-        </div>
-      </aside>
+      <DeleteModal
+        isOpen={isDeleteOpen}
+        t={graph ? { id: graph.id, name: graph.name } : undefined}
+        onClose={() => setIsDeleteOpen(false)}
+        onDeleted={() => {
+          queryClient.invalidateQueries({ queryKey: ["graphs"] });
+          router.push("/dashboard/graphs");
+        }}
+        deleteT={handleDeleteGraph}
+      />
     </div>
   );
 }

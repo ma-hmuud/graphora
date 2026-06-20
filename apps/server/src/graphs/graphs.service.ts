@@ -170,6 +170,9 @@ export class GraphsService {
     density?: number | null;
     componentsCount?: number | null;
     communitiesCount?: number | null;
+    averageDegree?: number | null;
+    diameter?: number | null;
+    clusteringCoefficient?: number | null;
     graphData?: unknown;
   }) {
     try {
@@ -185,6 +188,9 @@ export class GraphsService {
           density: input.density ?? undefined,
           componentsCount: input.componentsCount ?? undefined,
           communitiesCount: input.communitiesCount ?? undefined,
+          averageDegree: input.averageDegree ?? undefined,
+          diameter: input.diameter ?? undefined,
+          clusteringCoefficient: input.clusteringCoefficient ?? undefined,
           graphData: input.graphData ?? undefined,
         },
       });

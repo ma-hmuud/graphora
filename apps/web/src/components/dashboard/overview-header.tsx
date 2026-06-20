@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Sparkle } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 
 type OverviewHeaderProps = {
   onCreateGraph: () => void;
@@ -8,16 +8,16 @@ type OverviewHeaderProps = {
 
 export function OverviewHeader({ onCreateGraph }: OverviewHeaderProps) {
   return (
-    <section className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+    <section className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-slate-200 dark:border-white/10">
       <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary font-label-mono text-label-mono mb-3">
-          <Sparkle className="w-3 h-3" />
+        <div className="inline-flex items-center gap-2 border border-primary-container/20 bg-primary-container/5 dark:border-[#c0c1ff]/20 dark:bg-[#c0c1ff]/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-primary-container dark:text-[#c0c1ff] rounded-full mb-3">
+          <Sparkles className="w-3 h-3" />
           Workspace Pulse
         </div>
-        <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">
+        <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-transparent dark:bg-linear-to-r dark:from-white dark:via-slate-200 dark:to-slate-500 dark:bg-clip-text">
           Overview
         </h2>
-        <p className="text-on-surface-variant font-body-md text-body-md max-w-xl">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
           System health, graph processing signals, and dataset movement across
           teams.
         </p>
@@ -25,7 +25,7 @@ export function OverviewHeader({ onCreateGraph }: OverviewHeaderProps) {
       <div className="flex flex-col sm:flex-row gap-3">
         <button
           onClick={onCreateGraph}
-          className="bg-inverse-primary hover:bg-primary-container text-white px-6 py-3 rounded-DEFAULT font-label-mono text-label-mono font-medium transition-colors shadow-[0_0_12px_rgba(192,193,255,0.2)] flex items-center gap-2"
+          className="bg-primary-container hover:bg-[#6c6fed] text-white px-5 py-2.5 text-xs font-semibold tracking-wide uppercase flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-[0_0_20px_rgba(192,193,255,0.25)] rounded-lg active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />
           Create Graph

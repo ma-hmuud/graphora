@@ -20,34 +20,32 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!isAuthPending && !session?.user) {
       router.push("/login");
-    } else if (!isAuthPending && session?.user && !session.user.emailVerified) {
-      router.push("/verify-email");
     }
   }, [session, isAuthPending, router]);
 
   if (isAuthPending) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19] flex items-center justify-center">
         <Loader />
       </div>
     );
   }
 
-  if (!session?.user || !session.user.emailVerified) {
+  if (!session?.user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19] flex items-center justify-center">
         <Loader />
       </div>
     );
   }
 
   return (
-    <div className="bg-surface text-on-surface font-body-md min-h-screen flex">
-      <main className="transition-[margin] grow duration-300">
-        <div className="max-w-6xl mx-auto space-y-8">
+    <div className="bg-slate-50 dark:bg-[#0B0F19] text-foreground min-h-screen flex flex-col">
+      <main className="grow transition-all duration-300 px-4 py-8">
+        <div className="max-w-7xl mx-auto space-y-8">
           <OverviewHeader onCreateGraph={() => setIsModalOpen(true)} />
           <StatsCards stats={stats} isLoading={isDataLoading} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <RecentGraphs />
             <RecentDatasets />
           </div>

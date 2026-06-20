@@ -1,13 +1,11 @@
 "use client";
 
-import { Network, RefreshCw, AlertCircle, MoreVertical } from "lucide-react";
+import { Network, RefreshCw, AlertCircle } from "lucide-react";
 import { cn } from "@graphora/ui/lib/utils";
 import { useDashboardData } from "@/hooks/dashboard/use-dashboard-data";
 import { Skeleton } from "@/components/skeleton";
 import type { Graph } from "@/lib/types";
 import Link from "next/link";
-
-type GraphStatus = "READY" | "PROCESSING" | "FAILED";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
   notation: "compact",
@@ -18,14 +16,14 @@ export function RecentGraphs() {
   const { graphs, isLoading } = useDashboardData();
 
   return (
-    <div className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6 flex flex-col">
+    <div className="bg-white dark:bg-[#111420]/80 border border-slate-200 dark:border-white/10 rounded-2xl p-6 flex flex-col backdrop-blur-xl shadow-sm dark:shadow-xl">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="font-headline-md text-headline-md text-on-surface">
+        <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
           Recent Graphs
         </h3>
         <Link
           href="/dashboard/graphs"
-          className="text-primary hover:text-primary-fixed-dim font-label-mono text-label-mono underline underline-offset-4"
+          className="text-xs text-primary-container dark:text-[#c0c1ff] hover:text-[#6c6fed] dark:hover:text-primary-fixed font-semibold uppercase tracking-wider transition-colors"
         >
           View All
         </Link>
@@ -36,9 +34,9 @@ export function RecentGraphs() {
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={`skeleton-${index}`}
-                className="bg-surface-container p-4 border border-outline-variant/40 rounded-DEFAULT flex items-center gap-4"
+                className="bg-slate-50/50 dark:bg-black/20 p-4 border border-slate-200 dark:border-white/5 rounded-xl flex items-center gap-4 animate-pulse"
               >
-                <Skeleton className="h-10 w-10 rounded" />
+                <Skeleton className="h-10 w-10 rounded-lg" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-48" />
                   <Skeleton className="h-3 w-32" />
@@ -47,39 +45,41 @@ export function RecentGraphs() {
             ))}
           </div>
         ) : (graphs ?? []).length === 0 ? (
-          <p className="text-on-surface-variant">No graphs yet.</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm italic py-4">
+            No graphs yet.
+          </p>
         ) : (
-          (graphs ?? []).map((graph: Graph) => (
+          (graphs ?? []).slice(0, 4).map((graph: Graph) => (
             <Link
               href={`/dashboard/graphs/${graph.id}`}
               key={graph.id}
               className={cn(
-                "bg-surface-container p-4 border transition-colors rounded-DEFAULT flex justify-between items-center group cursor-pointer",
+                "bg-slate-50/50 dark:bg-black/20 p-4 border transition-all duration-300 rounded-xl flex justify-between items-center group cursor-pointer",
                 graph.status === "READY" &&
-                  "border-outline-variant hover:border-primary/40",
+                  "border-slate-100 dark:border-white/5 hover:border-primary-container/30 dark:hover:border-[#c0c1ff]/30 hover:bg-slate-100 dark:hover:bg-black/30",
                 graph.status === "PROCESSING" &&
-                  "border-primary/50 shadow-[0_0_8px_rgba(192,193,255,0.15)]",
+                  "border-primary-container/30 dark:border-[#c0c1ff]/30 shadow-[0_0_12px_rgba(128,131,255,0.15)] dark:shadow-[0_0_12px_rgba(192,193,255,0.15)]",
                 graph.status === "FAILED" &&
-                  "border-outline-variant hover:border-error/40",
+                  "border-slate-100 dark:border-white/5 hover:border-red-500/30",
               )}
             >
               <div className="flex items-center gap-4">
                 <div
                   className={cn(
-                    "w-10 h-10 rounded border flex items-center justify-center relative",
+                    "w-10 h-10 rounded-lg border flex items-center justify-center relative shrink-0",
                     graph.status === "READY" &&
-                      "bg-primary/10 border-primary/30 text-primary",
+                      "bg-primary-container/10 dark:bg-[#c0c1ff]/10 border-primary-container/20 dark:border-[#c0c1ff]/20 text-primary-container dark:text-[#c0c1ff]",
                     graph.status === "PROCESSING" &&
-                      "bg-primary/10 border-primary/30 text-primary",
+                      "bg-primary-container/10 border-primary-container/20 text-primary-container",
                     graph.status === "FAILED" &&
-                      "bg-error/10 border-error/30 text-error",
+                      "bg-red-500/10 border-red-500/20 text-red-400",
                   )}
                 >
                   {graph.status === "PROCESSING" ? (
                     <>
                       <RefreshCw className="w-5 h-5 animate-spin" />
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#f39c12] rounded-full animate-ping opacity-75" />
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#f39c12] rounded-full" />
+                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping opacity-75" />
+                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full" />
                     </>
                   ) : graph.status === "FAILED" ? (
                     <AlertCircle className="w-5 h-5" />
@@ -88,52 +88,36 @@ export function RecentGraphs() {
                   )}
                 </div>
                 <div>
-                  <h4
-                    className={cn(
-                      "font-headline-sm text-headline-sm text-on-surface transition-colors",
-                      graph.status === "READY" && "group-hover:text-primary",
-                    )}
-                  >
+                  <h4 className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-primary-container dark:group-hover:text-[#c0c1ff] transition-colors duration-300 text-sm">
                     {graph.name}
                   </h4>
-                  <p
-                    className={cn(
-                      "font-label-mono text-label-mono",
-                      graph.status === "FAILED"
-                        ? "text-error/80"
-                        : "text-on-surface-variant",
-                    )}
-                  >
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     {graph.status === "READY"
-                      ? `${numberFormatter.format(
-                          graph.nodeCount ?? 0,
-                        )} Nodes • ${numberFormatter.format(
-                          graph.edgeCount ?? 0,
-                        )} Edges`
-                      : "Processing..."}
+                      ? `${numberFormatter.format(graph.nodeCount ?? 0)} Nodes • ${numberFormatter.format(graph.edgeCount ?? 0)} Edges`
+                      : graph.status === "FAILED"
+                        ? "Processing Failed"
+                        : "Processing..."}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
+
+              <div className="flex items-center gap-3">
                 {graph.status === "READY" && (
-                  <span className="px-2 py-1 rounded-sm border border-[#2ecc71] text-[#2ecc71] bg-[#2ecc71]/10 font-label-mono text-[10px] uppercase tracking-wider">
+                  <span className="px-2 py-0.5 rounded border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 text-[9px] uppercase font-semibold tracking-wider">
                     Ready
                   </span>
                 )}
                 {graph.status === "PROCESSING" && (
-                  <span className="px-2 py-1 rounded-sm border border-[#f39c12] text-[#f39c12] bg-[#f39c12]/10 font-label-mono text-[10px] uppercase tracking-wider flex items-center gap-1">
-                    <RefreshCw className="w-3 h-3 animate-spin" />
-                    Processing
+                  <span className="px-2 py-0.5 rounded border border-amber-500/20 text-amber-650 dark:text-amber-400 bg-amber-500/5 text-[9px] uppercase font-semibold tracking-wider flex items-center gap-1">
+                    <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                    Running
                   </span>
                 )}
                 {graph.status === "FAILED" && (
-                  <span className="px-2 py-1 rounded-sm border border-error text-error bg-error/10 font-label-mono text-[10px] uppercase tracking-wider">
+                  <span className="px-2 py-0.5 rounded border border-red-500/20 text-red-500 dark:text-red-400 bg-red-500/5 text-[9px] uppercase font-semibold tracking-wider">
                     Failed
                   </span>
                 )}
-                <button className="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                  <MoreVertical className="w-5 h-5" />
-                </button>
               </div>
             </Link>
           ))

@@ -26,7 +26,7 @@ export function DatasetOverview({ fileUrl, isLoading }: DatasetOverviewProps) {
 
   if (isLoading || isFetching) {
     return (
-      <section className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6">
+      <section className="bg-slate-50 border border-slate-200 dark:border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={`overview-skeleton-${index}`} className="h-20" />
@@ -42,16 +42,18 @@ export function DatasetOverview({ fileUrl, isLoading }: DatasetOverviewProps) {
 
   if (!fileUrl) {
     return (
-      <section className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6">
-        <p className="text-on-surface-variant">Dataset file not available.</p>
+      <section className="bg-slate-50 border border-slate-200 dark:border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-xl">
+        <p className="text-slate-400 italic text-sm text-center py-4">
+          Dataset file not available.
+        </p>
       </section>
     );
   }
 
   if (error) {
     return (
-      <section className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6">
-        <p className="text-on-surface-variant">
+      <section className="bg-slate-50 border border-slate-200 dark:border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-xl">
+        <p className="text-red-400 italic text-sm text-center py-4">
           Unable to parse dataset preview.
         </p>
       </section>
@@ -63,50 +65,58 @@ export function DatasetOverview({ fileUrl, isLoading }: DatasetOverviewProps) {
   }
 
   return (
-    <section className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-          <p className="text-on-surface-variant text-xs">Rows</p>
-          <p className="text-on-surface font-label-mono text-label-mono">
-            {numberFormatter.format(data.rowCount)}
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4">
+          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">
+            Rows
+          </span>
+          <p className="text-base font-mono font-bold dark:text-slate-200 text-slate-800">
+            {data.rowCount}
           </p>
         </div>
-        <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-          <p className="text-on-surface-variant text-xs">Columns</p>
-          <p className="text-on-surface font-label-mono text-label-mono">
+        <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4">
+          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">
+            Columns
+          </span>
+          <p className="text-base font-mono font-bold dark:text-slate-200 text-slate-800">
             {data.columnCount}
           </p>
         </div>
-        <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-          <p className="text-on-surface-variant text-xs">
+        <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4">
+          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">
             Unique values (sample)
-          </p>
-          <p className="text-on-surface font-label-mono text-label-mono">
+          </span>
+          <p className="text-base font-mono font-bold dark:text-slate-200 text-slate-800">
             {numberFormatter.format(data.uniqueCount)}
           </p>
         </div>
-        <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-          <p className="text-on-surface-variant text-xs">Preview rows</p>
-          <p className="text-on-surface font-label-mono text-label-mono">
+        <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4">
+          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">
+            Preview rows
+          </span>
+          <p className="text-base font-mono font-bold dark:text-slate-200 text-slate-800">
             {data.preview.length}
           </p>
         </div>
       </div>
 
       <div className="mt-6">
-        <p className="text-on-surface-variant text-xs mb-3">Preview</p>
-        <div className="overflow-x-auto">
+        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-3">
+          Preview
+        </span>
+        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-black/20 p-4">
           <table className="w-full text-left border-collapse">
             <tbody>
               {data.preview.map((row, rowIndex) => (
                 <tr
                   key={`row-${rowIndex}`}
-                  className="border-b border-outline-variant/40"
+                  className="border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors"
                 >
                   {row.map((cell, cellIndex) => (
                     <td
                       key={`cell-${rowIndex}-${cellIndex}`}
-                      className="py-2 pr-4 text-on-surface-variant font-label-mono text-label-mono"
+                      className="py-2.5 pr-4 text-xs font-mono text-slate-800 dark:text-slate-200 whitespace-nowrap"
                     >
                       {cell}
                     </td>
@@ -117,7 +127,7 @@ export function DatasetOverview({ fileUrl, isLoading }: DatasetOverviewProps) {
           </table>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 

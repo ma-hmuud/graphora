@@ -60,7 +60,13 @@ export class DatasetsResolver {
     const upload = await file;
     if (!upload) throw new BadRequestException("File is required");
 
+    const isCsv = upload.filename.toLowerCase().endsWith(".csv") || upload.mimetype === "text/csv";
+    if (!isCsv) {
+      throw new BadRequestException("Only CSV files are allowed.");
+    }
+
     const buffer = await uploadToBuffer(upload);
+
 
     const dataset = await this.datasets.createDataset(
       Number(session.user.id),

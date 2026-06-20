@@ -30,6 +30,9 @@ export type Graph = {
   density?: number | null;
   componentsCount?: number | null;
   communitiesCount?: number | null;
+  averageDegree?: number | null;
+  diameter?: number | null;
+  clusteringCoefficient?: number | null;
   shareSlug?: string | null;
   graphData?: unknown | null;
   createdAt: string;

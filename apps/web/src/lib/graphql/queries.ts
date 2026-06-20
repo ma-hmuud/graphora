@@ -50,6 +50,9 @@ export const GRAPHS_QUERY = gql`
       edgeCount
       density
       componentsCount
+      averageDegree
+      diameter
+      clusteringCoefficient
       shareSlug
       createdAt
       updatedAt
@@ -75,6 +78,10 @@ export const GRAPH_QUERY = gql`
       edgeCount
       density
       componentsCount
+      communitiesCount
+      averageDegree
+      diameter
+      clusteringCoefficient
       errorMessage
       shareSlug
       graphData

@@ -141,9 +141,12 @@ def compute_graph_stats(G: nx.DiGraph) -> dict:
         "nodeCount":       G.number_of_nodes(),
         "edgeCount":       G.number_of_edges(),
         "density":          nx.density(G),
+        "diameter":        nx.diameter(G.to_undirected()) if nx.is_connected(G.to_undirected()) else None,
+        "averageDegree":   sum(dict(G.degree()).values()) / G.number_of_nodes() if G.number_of_nodes() > 0 else 0,
         "isDirected":      G.is_directed(),
         "isWeighted":      is_weighted,
         "componentsCount": nx.number_weakly_connected_components(G),
+        "clusteringCoefficient": nx.average_clustering(G.to_undirected()),
     }
 
 
@@ -153,16 +156,28 @@ def compute_node_metrics(G: nx.DiGraph) -> dict[str, dict]:
     betweenness = nx.betweenness_centrality(G, weight="weight")
     closeness = nx.closeness_centrality(G)
     pagerank = nx.pagerank(G, weight="weight")
+    
+    # Try computing eigenvector centrality. Handlers fallback in case of convergence/directed limitations.
+    try:
+        # For directed graphs, we use G.to_undirected() to guarantee eigenvector centrality calculation stability if needed, 
+        # or try directly. Let's do G.to_undirected() to avoid convergence errors on arbitrary directed structures.
+        eigencentrality = nx.eigenvector_centrality(G.to_undirected(), max_iter=1000, weight="weight")
+    except Exception as e:
+        log.warning("Eigenvector centrality calculation failed, falling back: %s", str(e))
+        eigencentrality = degree
 
     return {
         node: {
-            "degree":      degree.get(node, 0.0),
-            "betweenness": betweenness.get(node, 0.0),
-            "closeness":   closeness.get(node, 0.0),
             "pagerank":    pagerank.get(node, 0.0),
+            "degreeCentrality": degree.get(node, 0.0),
+            "betweennessCentrality": betweenness.get(node, 0.0),
+            "closenessCentrality": closeness.get(node, 0.0),
+            "eigenvectorCentrality": eigencentrality.get(node, 0.0),
         }
         for node in G.nodes()
     }
+
+
 
 
 def fetch_csv_from_url(file_url: str) -> str:

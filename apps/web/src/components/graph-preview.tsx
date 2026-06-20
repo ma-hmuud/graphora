@@ -7,6 +7,8 @@ import ForceGraph2D, {
   type GraphData,
 } from "react-force-graph-2d";
 
+import { useTheme } from "next-themes";
+
 /* ---------- sample graph generation ---------- */
 
 interface GNode {
@@ -64,6 +66,8 @@ export default function GraphPreview() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [hovered, setHovered] = useState<NodeObject<GNode> | null>(null);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== "light";
 
   const data = useMemo(generateGraph, []);
 
@@ -109,9 +113,9 @@ export default function GraphPreview() {
       if (!hovered) return CLUSTER_COLORS[node.cluster] ?? "#6366F1";
       return neighbours.has(node.id as number)
         ? CLUSTER_COLORS[node.cluster] ?? "#6366F1"
-        : "rgba(255,255,255,0.08)";
+        : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)");
     },
-    [hovered, neighbours],
+    [hovered, neighbours, isDark],
   );
 
   const nodeVal = useCallback(
@@ -134,12 +138,14 @@ export default function GraphPreview() {
         typeof link.target === "object"
           ? (link.target as NodeObject<GNode>).id
           : link.target;
-      if (!hovered) return "rgba(99,102,241,0.2)";
+      if (!hovered) return isDark ? "rgba(99,102,241,0.2)" : "rgba(99,102,241,0.3)";
       const connected =
         neighbours.has(a as number) && neighbours.has(b as number);
-      return connected ? "rgba(99,102,241,0.6)" : "rgba(99,102,241,0.04)";
+      return connected 
+        ? (isDark ? "rgba(99,102,241,0.6)" : "rgba(99,102,241,0.7)") 
+        : (isDark ? "rgba(99,102,241,0.04)" : "rgba(99,102,241,0.06)");
     },
-    [hovered, neighbours],
+    [hovered, neighbours, isDark],
   );
 
   const linkWidth = useCallback(

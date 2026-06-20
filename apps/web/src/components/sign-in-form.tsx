@@ -56,23 +56,23 @@ export default function SignInForm() {
   }
 
   return (
-    <Card className="relative w-full max-w-md overflow-hidden border border-white/10 bg-black/40 p-2 shadow-[0_0_50px_-12px_rgba(56,189,248,0.3)] backdrop-blur-xl">
-      <div className="absolute -left-16 -top-16 h-32 w-32 rounded-full bg-sky-500/10 blur-2xl" />
-      <div className="absolute -bottom-16 -right-16 h-32 w-32 rounded-full bg-indigo-500/10 blur-2xl" />
-      
+    <Card className="relative w-full max-w-md overflow-hidden border border-white/10 bg-black/40 p-2 shadow-[0_0_50px_-12px_rgba(192,193,255,0.3)] backdrop-blur-xl">
+      <div className="absolute -left-16 -top-16 h-32 w-32 rounded-full bg-[#c0c1ff]/10 blur-2xl" />
+      <div className="absolute -bottom-16 -right-16 h-32 w-32 rounded-full bg-inverse-primary/10 blur-2xl" />
+
       <CardHeader className="relative z-10 space-y-2 text-center pb-8 pt-6">
-        <CardTitle className="bg-gradient-to-r from-sky-400 via-indigo-200 to-white bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+        <CardTitle className="bg-linear-to-r from-[#c0c1ff] via-primary-fixed to-white bg-clip-text text-3xl font-bold tracking-tight text-transparent">
           Welcome back
         </CardTitle>
         <CardDescription className="text-muted-foreground/80">
           Sign in to your account using Google to continue
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="relative z-10 pb-6">
         <Button
           type="button"
-          className="relative w-full justify-center gap-3 overflow-hidden border border-white/15 bg-white/5 py-6 text-base font-medium text-white transition-all duration-300 hover:border-sky-500/40 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] active:scale-[0.98]"
+          className="relative w-full justify-center gap-3 overflow-hidden border border-white/15 bg-white/5 py-6 text-base font-medium text-white transition-all duration-300 hover:border-[#c0c1ff]/40 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(192,193,255,0.15)] active:scale-[0.98]"
           onClick={() => googleMutation.mutate()}
           disabled={googleMutation.isPending}
         >
@@ -127,4 +127,3 @@ function GoogleIcon() {
     </svg>
   );
 }
-

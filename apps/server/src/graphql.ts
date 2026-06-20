@@ -104,6 +104,9 @@ export interface Graph {
     density?: Nullable<number>;
     componentsCount?: Nullable<number>;
     communitiesCount?: Nullable<number>;
+    averageDegree?: Nullable<number>;
+    diameter?: Nullable<number>;
+    clusteringCoefficient?: Nullable<number>;
     shareSlug?: Nullable<string>;
     errorMessage?: Nullable<string>;
     graphData?: Nullable<JSON>;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Edit, ExternalLink, Trash2 } from "lucide-react";
+import { Edit, ExternalLink, Trash2, Database } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useDataset } from "@/hooks/datasets/use-dataset";
 import { useQueryClient } from "@tanstack/react-query";
@@ -26,33 +26,35 @@ export default function DatasetDetailPage() {
   useEffect(() => {
     if (!isAuthPending && !session?.user) {
       router.push("/login");
-    } else if (!isAuthPending && session?.user && !session.user.emailVerified) {
-      router.push("/verify-email");
     }
   }, [session, isAuthPending, router]);
 
   if (isAuthPending) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19] flex items-center justify-center text-muted-foreground">
         Loading...
       </div>
     );
   }
 
-  if (!session?.user || !session.user.emailVerified) {
+  if (!session?.user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19] flex items-center justify-center text-muted-foreground">
         Loading...
       </div>
     );
   }
 
   return (
-    <div className="bg-surface text-on-surface font-body-md min-h-screen flex">
-      <main className="grow transition-[margin] duration-300">
-        <div className="max-w-5xl mx-auto space-y-6">
-          <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div className="bg-slate-50 dark:bg-[#0B0F19] text-foreground min-h-screen flex flex-col">
+      <main className="grow transition-all duration-300 px-4 py-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header */}
+          <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-slate-200 dark:border-white/10">
             <div>
+              <div className="inline-flex items-center gap-2 border border-primary-container/20 bg-primary-container/5 dark:border-[#c0c1ff]/20 dark:bg-[#c0c1ff]/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-primary-container dark:text-[#c0c1ff] rounded-full mb-3">
+                Dataset Details
+              </div>
               {isLoading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-8 w-64" />
@@ -60,20 +62,21 @@ export default function DatasetDetailPage() {
                 </div>
               ) : (
                 <>
-                  <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">
+                  <h2 className="text-3xl font-extrabold tracking-tight bg-linear-to-r from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-slate-200 dark:to-slate-500 bg-clip-text text-transparent">
                     {dataset?.name ?? "Dataset"}
                   </h2>
-                  <p className="text-on-surface-variant font-body-md text-body-md">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     {dataset?.description ||
                       "Dataset overview and processing details."}
                   </p>
                 </>
               )}
             </div>
+
             <div className="flex gap-3">
               <button
                 onClick={() => setIsEditOpen(true)}
-                className="border border-outline-variant hover:border-primary text-primary px-4 py-2 rounded-DEFAULT font-label-mono text-label-mono flex items-center gap-2"
+                className="border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 px-4 py-2 text-xs font-semibold tracking-wide uppercase flex items-center gap-2 transition duration-200 rounded-lg disabled:opacity-50"
                 disabled={isLoading || !dataset}
               >
                 <Edit className="w-4 h-4" />
@@ -81,7 +84,7 @@ export default function DatasetDetailPage() {
               </button>
               <button
                 onClick={() => setIsDeleteOpen(true)}
-                className="border border-error/40 hover:border-error text-error px-4 py-2 rounded-DEFAULT font-label-mono text-label-mono flex items-center gap-2"
+                className="border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 px-4 py-2 text-xs font-semibold tracking-wide uppercase flex items-center gap-2 transition duration-200 rounded-lg disabled:opacity-50"
                 disabled={isLoading || !dataset}
               >
                 <Trash2 className="w-4 h-4" />
@@ -90,51 +93,62 @@ export default function DatasetDetailPage() {
             </div>
           </header>
 
-          <section className="bg-[#1E293B] border border-outline-variant rounded-DEFAULT p-6">
+          {/* Stats overview card grid */}
+          <section className="bg-slate-50 dark:bg-[#111420]/80 border border-slate-200 dark:border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-sm dark:shadow-xl">
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Array.from({ length: 6 }).map((_, index) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+                {Array.from({ length: 4 }).map((_, index) => (
                   <Skeleton key={`detail-skeleton-${index}`} className="h-20" />
                 ))}
               </div>
             ) : !dataset ? (
-              <p className="text-on-surface-variant">Dataset not found.</p>
+              <p className="text-slate-500 dark:text-slate-400 italic text-sm text-center py-4">
+                Dataset details not found.
+              </p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                  <p className="text-on-surface-variant text-xs">Size</p>
-                  <p className="text-on-surface font-label-mono text-label-mono">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider block mb-1">
+                    File Size
+                  </span>
+                  <p className="text-sm font-mono font-bold text-slate-800 dark:text-slate-200">
                     {dataset.sizeBytes
                       ? `${(dataset.sizeBytes / 1024).toFixed(1)} KB`
                       : "-"}
                   </p>
                 </div>
-                <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                  <p className="text-on-surface-variant text-xs">Created</p>
-                  <p className="text-on-surface font-label-mono text-label-mono">
+                <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider block mb-1">
+                    Uploaded On
+                  </span>
+                  <p className="text-sm font-mono font-bold text-slate-800 dark:text-slate-200">
                     {formatDate(dataset.createdAt)}
                   </p>
                 </div>
-                <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                  <p className="text-on-surface-variant text-xs">Updated</p>
-                  <p className="text-on-surface font-label-mono text-label-mono">
+                <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider block mb-1">
+                    Last Updated
+                  </span>
+                  <p className="text-sm font-mono font-bold text-slate-800 dark:text-slate-200">
                     {formatDate(dataset.updatedAt)}
                   </p>
                 </div>
-                <div className="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-4">
-                  <p className="text-on-surface-variant text-xs">File URL</p>
+                <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider block mb-1">
+                    Storage Key
+                  </span>
                   {dataset.fileUrl ? (
                     <a
                       href={dataset.fileUrl}
-                      className="text-primary font-label-mono text-label-mono flex items-center gap-2"
+                      className="text-primary-container hover:text-[#6c6fed] dark:text-[#c0c1ff] dark:hover:text-primary-fixed text-xs font-semibold tracking-wide uppercase flex items-center gap-1.5 transition-colors"
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Open file
-                      <ExternalLink className="w-4 h-4" />
+                      Retrieve File
+                      <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   ) : (
-                    <p className="text-on-surface font-label-mono text-label-mono">
+                    <p className="text-sm font-mono font-bold text-slate-800 dark:text-slate-200">
                       -
                     </p>
                   )}
@@ -143,9 +157,17 @@ export default function DatasetDetailPage() {
             )}
           </section>
 
-          <DatasetOverview fileUrl={dataset?.fileUrl} isLoading={isLoading} />
+          {/* Dataset preview container */}
+          <div className="bg-white dark:bg-[#111420]/80 border border-slate-200 dark:border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-sm dark:shadow-xl overflow-hidden">
+            <h3 className="font-bold text-slate-800 dark:text-white text-base mb-4 flex items-center gap-2">
+              <Database className="w-4 h-4 text-primary-container dark:text-[#c0c1ff]" />
+              File Preview & Sample Rows
+            </h3>
+            <DatasetOverview fileUrl={dataset?.fileUrl} isLoading={isLoading} />
+          </div>
         </div>
       </main>
+
       <EditDatasetModal
         isOpen={isEditOpen}
         dataset={
