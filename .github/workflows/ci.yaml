@@ -22,16 +22,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ── Node.js apps (web + server) ──────────────────────────────────
   build:
+    name: Typecheck & Build (Node)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
+      # Auth
       BETTER_AUTH_SECRET: "00000000000000000000000000000000"
-      BETTER_AUTH_URL: http://127.0.0.1:3000
-      CORS_ORIGIN: http://127.0.0.1:3001
+      BETTER_AUTH_URL: http://localhost:3000
+      CORS_ORIGIN: http://localhost:3001
+      # Database (external Neon – only needed for Prisma client generation)
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Web
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+      # S3 / Redis / Email – use dummy values for build-time checks
+      AWS_ACCESS_KEY: dummy
+      AWS_SECRET_ACCESS_KEY: dummy
+      AWS_REGION: us-east-1
+      AWS_S3_BUCKET: dummy
+      REDIS_HOST: localhost
+      REDIS_PORT: "6379"
+      REDIS_USERNAME: ""
+      REDIS_PASSWORD: ""
+      SERVER_URL: http://localhost:3000
       NODE_ENV: production
-      NEXT_PUBLIC_SERVER_URL: http://127.0.0.1:3000
 
     steps:
       - name: Checkout
@@ -44,7 +59,7 @@ jobs:
         with:
           version: 10.33.0
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -53,8 +68,44 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: pnpm --filter @graphora/db exec prisma generate
+
       - name: Typecheck
         run: pnpm check-types
 
       - name: Build
         run: pnpm build
+
+  # ── Python worker ─────────────────────────────────────────────────
+  worker-lint:
+    name: Lint (Python worker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/worker
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: apps/worker/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint with ruff
+        run: |
+          pip install ruff
+          ruff check .
+
+      - name: Type-check with mypy
+        run: |
+          pip install mypy
+          mypy worker.py --ignore-missing-imports
