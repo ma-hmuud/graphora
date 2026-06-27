@@ -106,6 +106,16 @@ Sync the Prisma schema with your database:
 pnpm run db:push
 ```
 
+## Future Plan
+
+We are continuously working to improve Graphora. Here are some key features planned for upcoming releases:
+
+- **3D Graph Visualization**: Support for immersive 3D force-directed layouts.
+- **Real-time Collaboration**: Multi-player editing and simultaneous workspace viewing.
+- **Graph ML Integrations**: Built-in support for Node2Vec, GNNs, and predictive edge modeling.
+- **Advanced Export Options**: Export visual graphs as high-res PDFs, SVGs, or interactive HTML bundles.
+- **Custom Node/Edge Styling**: UI tools to visually configure node shapes, sizes, and dynamic coloring based on metrics.
+
 ## 🚢 Deployment
 
 Graphora is optimized for a hybrid deployment:
