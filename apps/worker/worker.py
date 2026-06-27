@@ -54,8 +54,10 @@ def clean_and_parse(csv_content: str, source_col: str = None, target_col: str = 
         log.info("Using user-specified columns: source='%s', target='%s'", source_col, target_col)
         # Find exact matches in raw headers
         for h in raw_headers:
-            if h == source_col: source_key = h
-            if h == target_col: target_key = h
+            if h == source_col:
+                source_key = h
+            if h == target_col:
+                target_key = h
     
     # Auto-detection if not specified or not found
     if not source_key or not target_key:
@@ -110,7 +112,7 @@ def clean_and_parse(csv_content: str, source_col: str = None, target_col: str = 
         if has_weight:
             try:
                 weight = float(row.get("weight", 1.0))
-            except:
+            except Exception:
                 pass
 
         edge_key = (source, target)
@@ -273,7 +275,7 @@ async def process_job(job, job_token):
 
 async def main():
     log.info("Worker starting — Redis: %s", REDIS_HOST)
-    worker = Worker("graph-analysis", process_job, {"connection": {
+    Worker("graph-analysis", process_job, {"connection": {
         "username": REDIS_USERNAME,
         "password": REDIS_PASSWORD,
         "host": REDIS_HOST,

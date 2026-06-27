@@ -15,6 +15,9 @@
     "db:migrate": "prisma migrate dev --schema=../../apps/server/src/prisma/schema.prisma",
     "db:studio": "prisma studio --schema=../../apps/server/src/prisma/schema.prisma"
   },
+  "prisma": {
+    "schema": "../../apps/server/src/prisma/schema.prisma"
+  },
   "dependencies": {
     "@graphora/env": "workspace:*",
     "@prisma/client": "^6.6.0",
