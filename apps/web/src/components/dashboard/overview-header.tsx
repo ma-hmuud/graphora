@@ -10,10 +10,6 @@ export function OverviewHeader({ onCreateGraph }: OverviewHeaderProps) {
   return (
     <section className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-slate-200 dark:border-white/10">
       <div>
-        <div className="inline-flex items-center gap-2 border border-primary-container/20 bg-primary-container/5 dark:border-[#c0c1ff]/20 dark:bg-[#c0c1ff]/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-primary-container dark:text-[#c0c1ff] rounded-full mb-3">
-          <Sparkles className="w-3 h-3" />
-          Workspace Pulse
-        </div>
         <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-transparent dark:bg-linear-to-r dark:from-white dark:via-slate-200 dark:to-slate-500 dark:bg-clip-text">
           Overview
         </h2>

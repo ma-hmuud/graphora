@@ -44,7 +44,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
-      <SidebarHeader className="h-14 flex items-center justify-center border-b border-sidebar-border/50 group-data-[collapsible=icon]:!p-0">
+      <SidebarHeader className="h-14 flex items-center justify-center border-b border-sidebar-border/50 group-data-[collapsible=icon]:p-0!">
         <div className="flex items-center gap-3 w-full px-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center overflow-hidden">
           <div className="w-8 h-8 rounded-lg bg-[#c0c1ff]/15 dark:bg-[#c0c1ff]/10 flex items-center justify-center shrink-0 border border-[#c0c1ff]/30 dark:border-[#c0c1ff]/25 shadow-lg shadow-[#c0c1ff]/5">
             <Network className="w-5 h-5 text-inverse-primary dark:text-[#c0c1ff]" />
@@ -93,7 +93,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="group-data-[collapsible=icon]:!p-0">
+      <SidebarFooter className="group-data-[collapsible=icon]:p-0!">
         <div className="flex items-center gap-3 p-2 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-12 group-data-[collapsible=icon]:h-12 overflow-hidden rounded-xl border border-transparent group-data-[collapsible=icon]:justify-center hover:bg-sidebar-accent transition-colors">
           <div className="w-8 h-8 rounded-full bg-[#c0c1ff]/15 dark:bg-[#c0c1ff]/10 flex items-center justify-center overflow-hidden border border-[#c0c1ff]/30 dark:border-[#c0c1ff]/20 shrink-0">
             {user?.image ? (

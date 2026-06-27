@@ -3,7 +3,13 @@
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, UploadCloud, FileSpreadsheet, Edit3, Trash2 } from "lucide-react";
+import {
+  Search,
+  UploadCloud,
+  FileSpreadsheet,
+  Edit3,
+  Trash2,
+} from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useDatasets } from "@/hooks/datasets/use-datasets";
 import { useQueryClient } from "@tanstack/react-query";
@@ -36,7 +42,7 @@ export default function DatasetsPage() {
       [dataset.name, dataset.description ?? ""]
         .join(" ")
         .toLowerCase()
-        .includes(term)
+        .includes(term),
     );
   }, [datasets, search]);
 
@@ -66,13 +72,9 @@ export default function DatasetsPage() {
     <div className="bg-slate-50 dark:bg-[#0B0F19] text-foreground min-h-screen flex flex-col">
       <main className="grow transition-all duration-300 px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-6">
-          
           {/* Header */}
           <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-slate-200 dark:border-white/10">
             <div>
-              <div className="inline-flex items-center gap-2 border border-primary-container/20 bg-primary-container/5 dark:border-[#c0c1ff]/20 dark:bg-[#c0c1ff]/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-primary-container dark:text-[#c0c1ff] rounded-full mb-3">
-                Dataset Library
-              </div>
               <h2 className="text-3xl font-extrabold tracking-tight bg-linear-to-r from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-slate-200 dark:to-slate-500 bg-clip-text text-transparent">
                 Datasets
               </h2>
@@ -125,7 +127,9 @@ export default function DatasetsPage() {
             ) : filteredDatasets.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <FileSpreadsheet className="w-12 h-12 text-slate-400 dark:text-slate-600 mb-3" />
-                <p className="text-sm text-slate-500 dark:text-slate-400 italic">No datasets found.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 italic">
+                  No datasets found.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -136,22 +140,31 @@ export default function DatasetsPage() {
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3">
-                        <Link href={`/dashboard/datasets/${dataset.id}`} className="group-hover:text-primary-container dark:group-hover:text-[#c0c1ff] transition-colors">
-                          <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base">{dataset.name}</h3>
+                        <Link
+                          href={`/dashboard/datasets/${dataset.id}`}
+                          className="group-hover:text-primary-container dark:group-hover:text-[#c0c1ff] transition-colors"
+                        >
+                          <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base">
+                            {dataset.name}
+                          </h3>
                         </Link>
                         <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-200 dark:bg-white/5 px-2.5 py-1 rounded-md">
-                          {dataset.sizeBytes ? `${(dataset.sizeBytes / 1024).toFixed(1)} KB` : "-"}
+                          {dataset.sizeBytes
+                            ? `${(dataset.sizeBytes / 1024).toFixed(1)} KB`
+                            : "-"}
                         </span>
                       </div>
                       <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 line-clamp-2 min-h-8">
                         {dataset.description || "No description provided."}
                       </p>
                     </div>
- 
+
                     <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                      <span className="text-[11px] font-mono">{formatDate(dataset.updatedAt)}</span>
+                      <span className="text-[11px] font-mono">
+                        {formatDate(dataset.updatedAt)}
+                      </span>
                       <div className="flex items-center">
-                        <DropdownMenuActions 
+                        <DropdownMenuActions
                           viewHref={`/dashboard/datasets/${dataset.id}`}
                           onEdit={() =>
                             setEditingDataset({

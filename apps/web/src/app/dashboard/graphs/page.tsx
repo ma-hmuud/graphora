@@ -46,7 +46,7 @@ export default function GraphsPage() {
       [graph.name, graph.dataset.name, graph.status]
         .join(" ")
         .toLowerCase()
-        .includes(term)
+        .includes(term),
     );
   }, [graphs, search]);
 
@@ -81,25 +81,21 @@ export default function GraphsPage() {
     <div className="bg-slate-50 dark:bg-[#0B0F19] text-foreground min-h-screen flex flex-col">
       <main className="grow transition-all duration-300 px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-6">
-          
           {/* Header */}
           <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-slate-200 dark:border-white/10">
             <div>
-              <div className="inline-flex items-center gap-2 border border-[#8083ff]/20 bg-[#8083ff]/5 dark:border-[#c0c1ff]/20 dark:bg-[#c0c1ff]/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[#8083ff] dark:text-[#c0c1ff] rounded-full mb-3">
-                Knowledge Workspace
-              </div>
-              <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-slate-200 dark:to-slate-500 bg-clip-text text-transparent">
+              <h2 className="text-3xl font-extrabold tracking-tight bg-linear-to-r from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-slate-200 dark:to-slate-500 bg-clip-text text-transparent">
                 Graphs
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 Saved graph projects with metrics and datasets.
               </p>
             </div>
-            
+
             <div className="flex gap-3">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-[#8083ff] hover:bg-[#6c6fed] text-white px-5 py-2.5 text-xs font-semibold tracking-wide uppercase flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-[0_0_20px_rgba(192,193,255,0.25)] rounded-lg active:scale-[0.98]"
+                className="bg-primary-container hover:bg-[#6c6fed] text-white px-5 py-2.5 text-xs font-semibold tracking-wide uppercase flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-[0_0_20px_rgba(192,193,255,0.25)] rounded-lg active:scale-[0.98]"
               >
                 <Plus className="w-4 h-4" />
                 Create Graph
@@ -145,19 +141,21 @@ export default function GraphsPage() {
             ) : filteredGraphs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <Network className="w-12 h-12 text-slate-400 dark:text-slate-600 mb-3" />
-                <p className="text-sm text-slate-500 dark:text-slate-400 italic">No graphs found.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 italic">
+                  No graphs found.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredGraphs.map((graph) => (
                   <div
                     key={graph.id}
-                    className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-5 hover:border-[#8083ff]/30 dark:hover:border-[#c0c1ff]/30 hover:bg-slate-100/50 dark:hover:bg-black/35 transition-all duration-300 group flex flex-col justify-between"
+                    className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-5 hover:border-primary-container/30 dark:hover:border-[#c0c1ff]/30 hover:bg-slate-100/50 dark:hover:bg-black/35 transition-all duration-300 group flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3">
                         <Link href={`/dashboard/graphs/${graph.id}`}>
-                          <h3 className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-[#8083ff] dark:group-hover:text-[#c0c1ff] transition-colors text-base">
+                          <h3 className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-primary-container dark:group-hover:text-[#c0c1ff] transition-colors text-base">
                             {graph.name}
                           </h3>
                           <p className="text-xs text-slate-550 dark:text-slate-400 mt-1">
@@ -166,44 +164,64 @@ export default function GraphsPage() {
                         </Link>
                         <div className="shrink-0">
                           {graph.status === "PROCESSING" ? (
-                            <RefreshCw className="w-5 h-5 text-[#8083ff] animate-spin" />
+                            <RefreshCw className="w-5 h-5 text-primary-container animate-spin" />
                           ) : graph.status === "FAILED" ? (
                             <AlertCircle className="w-5 h-5 text-red-400" />
                           ) : (
-                            <Network className="w-5 h-5 text-[#8083ff] dark:text-[#c0c1ff]" />
+                            <Network className="w-5 h-5 text-primary-container dark:text-[#c0c1ff]" />
                           )}
                         </div>
                       </div>
- 
+
                       {/* Mini Stats Info block */}
                       <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
                         <div className="bg-white dark:bg-black/30 border border-slate-200 dark:border-white/5 rounded-lg p-2.5">
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">Nodes</span>
-                          <span className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200">{graph.nodeCount ?? "-"}</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">
+                            Nodes
+                          </span>
+                          <span className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200">
+                            {graph.nodeCount ?? "-"}
+                          </span>
                         </div>
                         <div className="bg-white dark:bg-black/30 border border-slate-200 dark:border-white/5 rounded-lg p-2.5">
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">Edges</span>
-                          <span className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200">{graph.edgeCount ?? "-"}</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">
+                            Edges
+                          </span>
+                          <span className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200">
+                            {graph.edgeCount ?? "-"}
+                          </span>
                         </div>
                         <div className="bg-white dark:bg-black/30 border border-slate-200 dark:border-white/5 rounded-lg p-2.5 overflow-hidden">
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">Source</span>
-                          <span className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200 truncate block" title={graph.sourceColumn ?? ""}>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">
+                            Source
+                          </span>
+                          <span
+                            className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200 truncate block"
+                            title={graph.sourceColumn ?? ""}
+                          >
                             {graph.sourceColumn ?? "-"}
                           </span>
                         </div>
                         <div className="bg-white dark:bg-black/30 border border-slate-200 dark:border-white/5 rounded-lg p-2.5 overflow-hidden">
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">Target</span>
-                          <span className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200 truncate block" title={graph.targetColumn ?? ""}>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">
+                            Target
+                          </span>
+                          <span
+                            className="text-xs font-mono font-bold text-slate-850 dark:text-slate-200 truncate block"
+                            title={graph.targetColumn ?? ""}
+                          >
                             {graph.targetColumn ?? "-"}
                           </span>
                         </div>
                       </div>
                     </div>
- 
+
                     <div className="mt-6 pt-4 border-t border-slate-205 dark:border-white/5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                      <span className="text-[11px] font-mono">{formatDate(graph.updatedAt)}</span>
+                      <span className="text-[11px] font-mono">
+                        {formatDate(graph.updatedAt)}
+                      </span>
                       <div className="flex items-center">
-                        <DropdownMenuActions 
+                        <DropdownMenuActions
                           viewHref={`/dashboard/graphs/${graph.id}`}
                           onDelete={() =>
                             setDeletingGraph({ id: graph.id, name: graph.name })
@@ -211,7 +229,6 @@ export default function GraphsPage() {
                         />
                       </div>
                     </div>
- 
                   </div>
                 ))}
               </div>
