@@ -3,6 +3,7 @@ import csv
 import io
 import logging
 import os
+from typing import Any
 
 import networkx as nx
 import requests
@@ -26,7 +27,7 @@ SERVER_URL = os.environ["SERVER_URL"]
 
 # ── Data Cleaning ──────────────────────────────────────────────────────────────
 
-def clean_and_parse(csv_content: str, source_col: str = None, target_col: str = None) -> tuple[list[dict], list[str]]:
+def clean_and_parse(csv_content: str, source_col: str | None = None, target_col: str | None = None) -> tuple[list[dict], list[str]]:
     """
     Returns (clean_rows, warnings).
     """
@@ -196,7 +197,7 @@ def send_results(
     graph_data: dict | None,
     error_message: str | None = None,
 ) -> None:
-    payload = {
+    payload: dict[str, Any] = {
         "graphId": graph_id,
         "status": status,
         "metrics": stats,
