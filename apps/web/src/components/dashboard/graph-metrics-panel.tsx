@@ -2,6 +2,13 @@
 
 import { useMemo } from "react";
 import type { Graph } from "@/lib/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@graphora/ui/components/select";
 
 export type MetricKey = 
   | "pagerank"
@@ -97,32 +104,32 @@ export function GraphMetricsPanel({
             <label className="text-xs uppercase tracking-[0.2em] text-on-surface-variant">
               Metric
             </label>
-            <select
-              value={metric}
-              onChange={(event) => onMetricChange(event.target.value as MetricKey)}
-              className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT text-sm text-on-surface px-3 py-2"
-            >
-              {Object.entries(metricLabels).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
+            <Select value={metric} onValueChange={(val) => onMetricChange(val as MetricKey)}>
+              <SelectTrigger className="w-[180px] bg-[#0B0F19] border border-outline-variant rounded-DEFAULT text-sm text-on-surface h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#0B0F19] border-outline-variant">
+                {Object.entries(metricLabels).map(([key, label]) => (
+                  <SelectItem key={key} value={key} className="text-on-surface focus:bg-white/10 cursor-pointer">
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex items-center gap-2">
             <label className="text-xs uppercase tracking-[0.2em] text-on-surface-variant">
               Scale
             </label>
-            <select
-              value={scale}
-              onChange={(event) =>
-                onScaleChange(event.target.value as "linear" | "log")
-              }
-              className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT text-sm text-on-surface px-3 py-2"
-            >
-              <option value="linear">Linear</option>
-              <option value="log">Log</option>
-            </select>
+            <Select value={scale} onValueChange={(val) => onScaleChange(val as "linear" | "log")}>
+              <SelectTrigger className="w-[100px] bg-[#0B0F19] border border-outline-variant rounded-DEFAULT text-sm text-on-surface h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#0B0F19] border-outline-variant">
+                <SelectItem value="linear" className="text-on-surface focus:bg-white/10 cursor-pointer">Linear</SelectItem>
+                <SelectItem value="log" className="text-on-surface focus:bg-white/10 cursor-pointer">Log</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex items-center gap-2">
             <label className="text-xs uppercase tracking-[0.2em] text-on-surface-variant">
@@ -150,17 +157,16 @@ export function GraphMetricsPanel({
             <label className="text-xs uppercase tracking-[0.2em] text-on-surface-variant">
               Colors
             </label>
-            <select
-              value={colorRamp}
-              onChange={(event) =>
-                onColorRampChange(event.target.value as "indigo" | "cyan" | "ember")
-              }
-              className="bg-[#0B0F19] border border-outline-variant rounded-DEFAULT text-sm text-on-surface px-3 py-2"
-            >
-              <option value="indigo">Indigo</option>
-              <option value="cyan">Cyan</option>
-              <option value="ember">Ember</option>
-            </select>
+            <Select value={colorRamp} onValueChange={(val) => onColorRampChange(val as "indigo" | "cyan" | "ember")}>
+              <SelectTrigger className="w-[120px] bg-[#0B0F19] border border-outline-variant rounded-DEFAULT text-sm text-on-surface h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#0B0F19] border-outline-variant">
+                <SelectItem value="indigo" className="text-on-surface focus:bg-white/10 cursor-pointer">Indigo</SelectItem>
+                <SelectItem value="cyan" className="text-on-surface focus:bg-white/10 cursor-pointer">Cyan</SelectItem>
+                <SelectItem value="ember" className="text-on-surface focus:bg-white/10 cursor-pointer">Ember</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <button
             onClick={onToggleTooltips}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Toaster } from "@graphora/ui/components/sonner";
+import { TooltipProvider } from "@graphora/ui/components/tooltip";
 import { ApolloProvider } from "@apollo/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
@@ -20,8 +21,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     >
       <ApolloProvider client={apolloClient}>
         <QueryClientProvider client={queryClient}>
-          {children}
-          <Toaster richColors />
+          <TooltipProvider>
+            {children}
+            <Toaster richColors />
+          </TooltipProvider>
         </QueryClientProvider>
       </ApolloProvider>
     </ThemeProvider>

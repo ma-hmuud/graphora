@@ -21,6 +21,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { formatDate } from "@/lib/format-date";
 import { CreateGraphModal } from "@/components/dashboard/create-graph-modal";
 import { DeleteModal } from "@/components/dashboard/delete-modal";
+import DropdownMenuActions from "@graphora/ui/components/dropdown-menu-actions-2";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
   notation: "compact",
@@ -201,21 +202,13 @@ export default function GraphsPage() {
  
                     <div className="mt-6 pt-4 border-t border-slate-205 dark:border-white/5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                       <span className="text-[11px] font-mono">{formatDate(graph.updatedAt)}</span>
-                      <div className="flex items-center gap-3">
-                        <Link
-                          href={`/dashboard/graphs/${graph.id}`}
-                          className="text-[#8083ff] dark:text-[#c0c1ff] hover:underline text-xs font-semibold uppercase tracking-wider"
-                        >
-                          View
-                        </Link>
-                        <button
-                          onClick={() =>
+                      <div className="flex items-center">
+                        <DropdownMenuActions 
+                          viewHref={`/dashboard/graphs/${graph.id}`}
+                          onDelete={() =>
                             setDeletingGraph({ id: graph.id, name: graph.name })
                           }
-                          className="text-red-400 hover:text-red-300 text-xs font-semibold uppercase tracking-wider"
-                        >
-                          Delete
-                        </button>
+                        />
                       </div>
                     </div>
  

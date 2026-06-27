@@ -3,6 +3,7 @@
 import { Database, UploadCloud } from "lucide-react";
 import { useDashboardData } from "@/hooks/dashboard/use-dashboard-data";
 import { Skeleton } from "@/components/skeleton";
+import DropdownMenuActions from "@graphora/ui/components/dropdown-menu-actions-2";
 import type { Dataset, Graph } from "@/lib/types";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
@@ -74,8 +75,11 @@ export function DatasetInventory() {
                 <th className="py-3 pr-4 border-b border-outline-variant">
                   PageRank Top
                 </th>
-                <th className="py-3 border-b border-outline-variant">
+                <th className="py-3 pr-4 border-b border-outline-variant">
                   Updated
+                </th>
+                <th className="py-3 pr-4 border-b border-outline-variant w-10">
+                  <span className="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
@@ -131,8 +135,11 @@ export function DatasetInventory() {
                     <td className="py-4 pr-4 text-on-surface-variant font-label-mono text-xs">
                       {graph?.shareSlug ? graph.shareSlug : "-"}
                     </td>
-                    <td className="py-4 text-on-surface-variant font-label-mono text-xs">
+                    <td className="py-4 pr-4 text-on-surface-variant font-label-mono text-xs">
                       {new Date(dataset.updatedAt).toLocaleString()}
+                    </td>
+                    <td className="py-4 pr-4 text-right">
+                      <DropdownMenuActions />
                     </td>
                   </tr>
                 );

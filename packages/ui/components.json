@@ -11,14 +11,16 @@
     "prefix": ""
   },
   "iconLibrary": "lucide",
+  "menuColor": "default",
+  "menuAccent": "subtle",
   "aliases": {
     "components": "@graphora/ui/components",
     "utils": "@graphora/ui/lib/utils",
-    "hooks": "@graphora/ui/hooks",
+    "ui": "@graphora/ui/components",
     "lib": "@graphora/ui/lib",
-    "ui": "@graphora/ui/components"
+    "hooks": "@graphora/ui/hooks"
   },
-  "menuColor": "default",
-  "menuAccent": "subtle",
-  "registries": {}
+  "registries": {
+    "@shadcnblocks": "https://shadcnblocks.com/r/{name}.json"
+  }
 }

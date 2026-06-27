@@ -8,41 +8,27 @@ import {
   BreadcrumbSeparator,
 } from "@graphora/ui/components/breadcrumb";
 import { Fragment } from "react/jsx-runtime";
-import { Button } from "@graphora/ui/components/button";
-import { PanelLeft } from "lucide-react";
+import { SidebarTrigger } from "@graphora/ui/components/sidebar";
 import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
+import { Separator } from "@graphora/ui/components/separator";
 
-export function AppBreadcrumb({
-  onToggle,
-  collapsed,
-}: {
-  onToggle: () => void;
-  collapsed: boolean;
-}) {
+export function AppBreadcrumb() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
 
   return (
-    <div className="sticky top-0 z-20 w-full flex items-center justify-between h-14 px-6 border-b border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#0e1220]/90 backdrop-blur-md">
-      <Breadcrumb
-        className="text-slate-500 dark:text-slate-400 font-medium"
-        aria-label="Breadcrumb"
-      >
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggle}
-            className="shrink-0 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors hidden md:flex animate-none"
-          >
-            <PanelLeft
-              className={`h-4 w-4 transition-transform ${collapsed ? "rotate-180" : ""}`}
-            />
-          </Button>
+    <div className="sticky top-0 z-20 w-full flex items-center justify-between h-14 px-4 border-b border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#0e1220]/90 backdrop-blur-md">
+      <div className="flex items-center gap-4">
+        <SidebarTrigger className="-ml-1" />
+        <Separator orientation="vertical" className="h-6" />
+        <Breadcrumb
+          className="text-muted-foreground font-medium"
+          aria-label="Breadcrumb"
+        >
           <BreadcrumbList className="flex items-center gap-1.5 text-xs">
             <BreadcrumbItem>
-              <Link href="/dashboard" className="hover:text-slate-900 dark:hover:text-white transition-colors">Home</Link>
+              <Link href="/dashboard" className="hover:text-foreground transition-colors">Home</Link>
             </BreadcrumbItem>
             {segments.map((segment, index, arr) => {
               const isLast = index === arr.length - 1;
@@ -60,17 +46,17 @@ export function AppBreadcrumb({
                   <BreadcrumbSeparator className="opacity-40" />
                   <BreadcrumbItem>
                     {isLast ? (
-                      <BreadcrumbPage className="text-slate-800 dark:text-slate-200 font-semibold">{displaySegment}</BreadcrumbPage>
+                      <BreadcrumbPage className="text-foreground font-semibold">{displaySegment}</BreadcrumbPage>
                     ) : (
-                      <Link href={href as any} className="hover:text-slate-900 dark:hover:text-white transition-colors">{displaySegment}</Link>
+                      <Link href={href as any} className="hover:text-foreground transition-colors">{displaySegment}</Link>
                     )}
                   </BreadcrumbItem>
                 </Fragment>
               );
             })}
           </BreadcrumbList>
-        </div>
-      </Breadcrumb>
+        </Breadcrumb>
+      </div>
       <div className="flex items-center gap-2 shrink-0">
         <ModeToggle />
       </div>

@@ -19,6 +19,13 @@ import { CREATE_GRAPH_MUTATION } from "@/lib/graphql/mutations";
 import { DATASET_HEADERS_QUERY } from "@/lib/graphql/queries";
 import type { Dataset } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@graphora/ui/components/select";
 
 interface CreateGraphModalProps {
   isOpen: boolean;
@@ -443,32 +450,30 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                     {isHeadersLoading ? (
                       <div className="h-10 bg-slate-100 dark:bg-black/30 animate-pulse rounded-xl border border-slate-200 dark:border-white/10" />
                     ) : (
-                      <select
+                      <Select
                         value={graphConfig.sourceColumn}
-                        onChange={(e) =>
+                        onValueChange={(val) =>
                           setGraphConfig((prev) => ({
                             ...prev,
-                            sourceColumn: e.target.value,
+                            sourceColumn: val ?? "",
                           }))
                         }
-                        className="w-full bg-white dark:bg-[#161a2b] text-slate-800 dark:text-slate-200 text-sm border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary-container/40 dark:focus:border-[#c0c1ff]/40"
                       >
-                        <option
-                          value=""
-                          className="bg-white text-slate-800 dark:bg-[#161a2b] dark:text-slate-200"
-                        >
-                          Select column...
-                        </option>
-                        {headers.map((h) => (
-                          <option
-                            key={`src-${h}`}
-                            value={h}
-                            className="bg-white text-slate-800 dark:bg-[#161a2b] dark:text-slate-200"
-                          >
-                            {h}
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="w-full bg-white dark:bg-[#161a2b] text-slate-800 dark:text-slate-200 text-sm border border-slate-200 dark:border-white/10 rounded-xl px-3 h-10 focus:outline-none focus:ring-1 focus:ring-primary-container/40 dark:focus:ring-[#c0c1ff]/40">
+                          <SelectValue placeholder="Select column..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white dark:bg-[#161a2b] border-slate-200 dark:border-white/10 rounded-xl">
+                          {headers.map((h) => (
+                            <SelectItem
+                              key={`src-${h}`}
+                              value={h}
+                              className="text-slate-800 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/5 cursor-pointer rounded-lg"
+                            >
+                              {h}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     )}
                   </div>
 
@@ -479,32 +484,30 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
                     {isHeadersLoading ? (
                       <div className="h-10 bg-slate-100 dark:bg-black/30 animate-pulse rounded-xl border border-slate-200 dark:border-white/10" />
                     ) : (
-                      <select
+                      <Select
                         value={graphConfig.targetColumn}
-                        onChange={(e) =>
+                        onValueChange={(val) =>
                           setGraphConfig((prev) => ({
                             ...prev,
-                            targetColumn: e.target.value,
+                            targetColumn: val ?? "",
                           }))
                         }
-                        className="w-full bg-white dark:bg-[#161a2b] text-slate-800 dark:text-slate-200 text-sm border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary-container/40 dark:focus:border-[#c0c1ff]/40"
                       >
-                        <option
-                          value=""
-                          className="bg-white text-slate-800 dark:bg-[#161a2b] dark:text-slate-200"
-                        >
-                          Select column...
-                        </option>
-                        {headers.map((h) => (
-                          <option
-                            key={`dst-${h}`}
-                            value={h}
-                            className="bg-white text-slate-800 dark:bg-[#161a2b] dark:text-slate-200"
-                          >
-                            {h}
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="w-full bg-white dark:bg-[#161a2b] text-slate-800 dark:text-slate-200 text-sm border border-slate-200 dark:border-white/10 rounded-xl px-3 h-10 focus:outline-none focus:ring-1 focus:ring-primary-container/40 dark:focus:ring-[#c0c1ff]/40">
+                          <SelectValue placeholder="Select column..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white dark:bg-[#161a2b] border-slate-200 dark:border-white/10 rounded-xl">
+                          {headers.map((h) => (
+                            <SelectItem
+                              key={`dst-${h}`}
+                              value={h}
+                              className="text-slate-800 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/5 cursor-pointer rounded-lg"
+                            >
+                              {h}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     )}
                   </div>
                 </div>

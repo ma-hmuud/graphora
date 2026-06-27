@@ -13,6 +13,7 @@ import { EditDatasetModal } from "@/components/dashboard/edit-dataset-modal";
 import { DeleteModal } from "@/components/dashboard/delete-modal";
 import { formatDate } from "@/lib/format-date";
 import { deleteDataset } from "@/lib/datasets";
+import DropdownMenuActions from "@graphora/ui/components/dropdown-menu-actions-2";
 
 export default function DatasetsPage() {
   const { data: session, isPending: isAuthPending } = authClient.useSession();
@@ -69,10 +70,10 @@ export default function DatasetsPage() {
           {/* Header */}
           <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-slate-200 dark:border-white/10">
             <div>
-              <div className="inline-flex items-center gap-2 border border-[#8083ff]/20 bg-[#8083ff]/5 dark:border-[#c0c1ff]/20 dark:bg-[#c0c1ff]/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[#8083ff] dark:text-[#c0c1ff] rounded-full mb-3">
+              <div className="inline-flex items-center gap-2 border border-primary-container/20 bg-primary-container/5 dark:border-[#c0c1ff]/20 dark:bg-[#c0c1ff]/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-primary-container dark:text-[#c0c1ff] rounded-full mb-3">
                 Dataset Library
               </div>
-              <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-slate-200 dark:to-slate-500 bg-clip-text text-transparent">
+              <h2 className="text-3xl font-extrabold tracking-tight bg-linear-to-r from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-slate-200 dark:to-slate-500 bg-clip-text text-transparent">
                 Datasets
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -81,7 +82,7 @@ export default function DatasetsPage() {
             </div>
             <button
               onClick={() => setIsUploadOpen(true)}
-              className="bg-[#8083ff] hover:bg-[#6c6fed] text-white px-5 py-2.5 text-xs font-semibold tracking-wide uppercase flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-[0_0_20px_rgba(192,193,255,0.25)] rounded-lg active:scale-[0.98]"
+              className="bg-primary-container hover:bg-[#6c6fed] text-white px-5 py-2.5 text-xs font-semibold tracking-wide uppercase flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-[0_0_20px_rgba(192,193,255,0.25)] rounded-lg active:scale-[0.98]"
             >
               <UploadCloud className="w-4 h-4" />
               Upload dataset
@@ -131,54 +132,41 @@ export default function DatasetsPage() {
                 {filteredDatasets.map((dataset) => (
                   <div
                     key={dataset.id}
-                    className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 p-5 hover:border-[#8083ff]/30 dark:hover:border-[#c0c1ff]/30 hover:bg-slate-100/50 dark:hover:bg-black/30 rounded-xl transition-all duration-300 flex flex-col justify-between group"
+                    className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 p-5 hover:border-primary-container/30 dark:hover:border-[#c0c1ff]/30 hover:bg-slate-100/50 dark:hover:bg-black/30 rounded-xl transition-all duration-300 flex flex-col justify-between group"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3">
-                        <Link href={`/dashboard/datasets/${dataset.id}`} className="group-hover:text-[#8083ff] dark:group-hover:text-[#c0c1ff] transition-colors">
+                        <Link href={`/dashboard/datasets/${dataset.id}`} className="group-hover:text-primary-container dark:group-hover:text-[#c0c1ff] transition-colors">
                           <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base">{dataset.name}</h3>
                         </Link>
                         <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-200 dark:bg-white/5 px-2.5 py-1 rounded-md">
                           {dataset.sizeBytes ? `${(dataset.sizeBytes / 1024).toFixed(1)} KB` : "-"}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 line-clamp-2 min-h-[2rem]">
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 line-clamp-2 min-h-8">
                         {dataset.description || "No description provided."}
                       </p>
                     </div>
  
                     <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                       <span className="text-[11px] font-mono">{formatDate(dataset.updatedAt)}</span>
-                      <div className="flex items-center gap-3">
-                        <Link
-                          href={`/dashboard/datasets/${dataset.id}`}
-                          className="text-[#8083ff] dark:text-[#c0c1ff] hover:underline text-xs font-semibold uppercase tracking-wider"
-                        >
-                          View
-                        </Link>
-                        <button
-                          onClick={() =>
+                      <div className="flex items-center">
+                        <DropdownMenuActions 
+                          viewHref={`/dashboard/datasets/${dataset.id}`}
+                          onEdit={() =>
                             setEditingDataset({
                               id: dataset.id,
                               name: dataset.name,
                               description: dataset.description,
                             })
                           }
-                          className="text-slate-500 hover:text-[#8083ff] dark:text-slate-400 dark:hover:text-[#c0c1ff] text-xs font-semibold uppercase tracking-wider"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() =>
+                          onDelete={() =>
                             setDeletingDataset({
                               id: dataset.id,
                               name: dataset.name,
                             })
                           }
-                          className="text-red-400 hover:text-red-300 text-xs font-semibold uppercase tracking-wider"
-                        >
-                          Delete
-                        </button>
+                        />
                       </div>
                     </div>
                   </div>
