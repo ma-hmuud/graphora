@@ -156,7 +156,7 @@ def compute_graph_stats(G: nx.DiGraph) -> dict:
 def compute_node_metrics(G: nx.DiGraph) -> dict[str, dict]:
     log.info("Computing metrics...")
     degree = nx.degree_centrality(G)
-    betweenness = nx.betweenness_centrality(G, weight="weight")
+    betweenness = nx.betweenness_centrality(G.to_undirected(), weight="weight")
     closeness = nx.closeness_centrality(G)
     pagerank = nx.pagerank(G, weight="weight")
     
