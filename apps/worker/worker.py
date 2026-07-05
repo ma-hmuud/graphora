@@ -215,7 +215,7 @@ def send_results(
         "graphData": None,
         "errorMessage": error_message[:500] if error_message else None,
     }
-        res = requests.post(url, json=errorPayload, timeout=30)
+        requests.post(url, json=errorPayload, timeout=30)
         
     response.raise_for_status()
 
