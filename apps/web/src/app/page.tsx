@@ -1,16 +1,14 @@
+"use client";
+
 import Link from "next/link";
-import { cookies } from "next/headers";
 import HeroCanvas from "@/components/hero-canvas";
 import DynamicGraphPreview from "@/components/dynamic-graph-preview";
 import { ModeToggle } from "@/components/mode-toggle";
+import { authClient } from "@/lib/auth-client";
 
-export default async function Home() {
-  const cookieStore = await cookies();
-  const allCookies =
-    typeof cookieStore.getAll === "function" ? cookieStore.getAll() : [];
-  const isSignedIn = allCookies.some((cookie) =>
-    cookie.name.startsWith("better-auth"),
-  );
+export default function Home() {
+  const session = authClient.useSession();
+  const isSignedIn = !!session.data?.session;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19] text-slate-800 dark:text-slate-100 antialiased selection:bg-[#c0c1ff]/30 selection:text-[#c0c1ff]">
