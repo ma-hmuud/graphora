@@ -9,7 +9,7 @@ type DatasetsResponse = {
   datasets: Dataset[];
 };
 
-export function useDatasets() {
+export function useDatasets(isEnabled: boolean = true) {
   return useQuery({
     queryKey: ["datasets"],
     queryFn: async () => {
@@ -19,5 +19,6 @@ export function useDatasets() {
       });
       return data.datasets;
     },
+    enabled: isEnabled,
   });
 }

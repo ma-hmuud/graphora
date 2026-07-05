@@ -120,7 +120,7 @@ export function CreateGraphModal({ isOpen, onClose }: CreateGraphModalProps) {
     toast("Dataset uploaded.");
   };
 
-  const { data: datasets, isLoading: isDatasetsLoading } = useDatasets();
+  const { data: datasets, isLoading: isDatasetsLoading } = useDatasets(isOpen);
 
   const filteredDatasets = useMemo(() => {
     const term = search.trim().toLowerCase();
