@@ -78,7 +78,7 @@ export async function updateDataset(input: {
 }) {
   const body = JSON.stringify({
     query:
-      "mutation UpdateDataset($id: ID!, $input: UpdateDatasetInput!) { updateDataset(id: $id, input: $input) { id name description s3Key sizeBytes status errorMessage createdAt updatedAt fileUrl } }",
+      "mutation UpdateDataset($id: ID!, $input: UpdateDatasetInput!) { updateDataset(id: $id, input: $input) { id name description s3Key sizeBytes createdAt updatedAt fileUrl } }",
     variables: {
       id: input.id,
       input: { name: input.name, description: input.description },

@@ -135,7 +135,7 @@ export default function DatasetDetailPage() {
                 </div>
                 <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider block mb-1">
-                    Storage Key
+                    File URL
                   </span>
                   {dataset.fileUrl ? (
                     <a
