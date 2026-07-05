@@ -206,8 +206,18 @@ def send_results(
     }
     url = f"{SERVER_URL.rstrip('/')}/internal/graphs/complete"
     response = requests.post(url, json=payload, timeout=30)
+    if not response.ok:
+        log.error("Failed to send results: %s — %s", response.status_code, response.text)
+        errorPayload: dict[str, Any] = {
+        "graphId": graph_id,
+        "status": status,
+        "metrics": None,
+        "graphData": None,
+        "errorMessage": error_message[:500] if error_message else None,
+    }
+        res = requests.post(url, json=errorPayload, timeout=30)
+        
     response.raise_for_status()
-
 
 # ── Job handler ────────────────────────────────────────────────────────────────
 
